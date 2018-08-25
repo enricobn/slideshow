@@ -1,0 +1,7 @@
+[package]
+name = "quadfight"
+version = "0.1.0"
+authors = ["Enrico Benedetti <enrico_benedetti@yahoo.com>"]
+
+[dependencies]
+ggez = "0.4"
