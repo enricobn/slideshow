@@ -10,7 +10,7 @@ use ggez::*;
 use ggez::conf::FullscreenType;
 use ggez::event::{self, EventHandler, Keycode, Mod};
 use ggez::graphics::{DrawMode,Point2,Rect,Color};
-use ggez::timer::get_fps;
+use ggez::timer::{get_fps, get_delta, duration_to_f64};
 use rand::*;
 
 fn main() -> GameResult<()> {
@@ -21,6 +21,8 @@ fn main() -> GameResult<()> {
     // c.window_mode.height = 60;
     c.window_mode.vsync = true;
 
+    println!("screen: {}x{}", c.window_mode.width, c.window_mode.height);
+
     let ctx = &mut Context::load_from_conf("super_simple", "ggez", c)?;
 
     if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
@@ -29,12 +31,11 @@ fn main() -> GameResult<()> {
         ctx.filesystem.mount(&path, true);
     }
 
-    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf", 16)?;
-
     for (width, height) in ggez::graphics::get_fullscreen_modes(ctx, 0)? {
         println!("{}x{}", width, height);
     }
 
+    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf", 16)?;
     let mut state = MainState::new(font);
 
     event::run(ctx, &mut state)
@@ -56,9 +57,9 @@ impl Enemy {
         Enemy{x: x, y: y, width: width, height: height, color: color, vx: vx, vy: vy}
     }
 
-    fn update(&mut self) {
-        self.x += self.vx;
-        self.y += self.vy;
+    fn update(&mut self, delta: f64) {
+        self.x += self.vx * delta as f32;
+        self.y += self.vy * delta as f32;
 
         if self.y < 0.0 {
             self.y = -self.y;
@@ -131,11 +132,14 @@ impl MainState {
 impl event::EventHandler for MainState {
 
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
+        let delta_duration = get_delta(_ctx);
+        let delta = duration_to_f64(delta_duration);
+
         let mut rng = thread_rng();
 
-        if self.enemies.len() < 10 &&  self.last_enemy_added_millis() > 300 {
-            let vy = rng.gen_range(-10.0, 10.0);
-            self.enemies.push(Enemy::new(800.0, rng.gen_range(0.0, 500.0), 100.0, 100.0, Color::new(1.0, 0.0, 0.0, 1.0), -10.0, vy));
+        if self.enemies.len() < 10 && self.last_enemy_added_millis() > 300 {
+            let vy = rng.gen_range(-300.0, 300.0);
+            self.enemies.push(Enemy::new(800.0, rng.gen_range(0.0, 500.0), 100.0, 100.0, Color::new(1.0, 0.0, 0.0, 1.0), -500.0, vy));
             self.last_enemy_added = Instant::now();
         }
 
@@ -143,7 +147,7 @@ impl event::EventHandler for MainState {
         let mut i: usize = 0;
         while i < self.enemies.len() {
             let enemy = self.enemies.index_mut(i);
-            enemy.update();
+            enemy.update(delta);
             if enemy.x + enemy.width < 0.0 {
                 to_remove.push(i);
             }
@@ -160,14 +164,6 @@ impl event::EventHandler for MainState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
 
-        graphics::set_color(ctx, self.player.color)?;
-        graphics::rectangle(ctx, DrawMode::Fill, Rect::new(
-                    self.player.x, 
-                    self.player.y, 
-                    self.player.width, 
-                    self.player.height
-                ))?;
-
         for enemy in &self.enemies {
             graphics::set_color(ctx, enemy.color)?;
             graphics::rectangle(ctx, DrawMode::Fill, Rect::new(
@@ -177,6 +173,14 @@ impl event::EventHandler for MainState {
                         enemy.height
                     ))?;
         }
+
+        graphics::set_color(ctx, self.player.color)?;
+        graphics::rectangle(ctx, DrawMode::Fill, Rect::new(
+                    self.player.x, 
+                    self.player.y, 
+                    self.player.width, 
+                    self.player.height
+                ))?;
 
         self.draw_fps(ctx)?;
 
