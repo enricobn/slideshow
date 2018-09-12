@@ -1,14 +1,19 @@
 extern crate ggez;
 extern crate rand;
+
+use std::ops::IndexMut;
+use std::time::Instant;
+use std::env;
+use std::path;
+
 use ggez::*;
 use ggez::conf::FullscreenType;
 use ggez::event::{self, EventHandler, Keycode, Mod};
 use ggez::graphics::{DrawMode,Point2,Rect,Color};
-use std::ops::IndexMut;
+use ggez::timer::get_fps;
 use rand::*;
-use std::time::Instant;
 
-fn main() {
+fn main() -> GameResult<()> {
     let mut c = conf::Conf::new();
     c.window_setup = c.window_setup.title("Quad fight");
     // c.window_mode.fullscreen_type = FullscreenType::Desktop;
@@ -16,15 +21,23 @@ fn main() {
     // c.window_mode.height = 60;
     c.window_mode.vsync = true;
 
-    let ctx = &mut Context::load_from_conf("super_simple", "ggez", c).unwrap();
+    let ctx = &mut Context::load_from_conf("super_simple", "ggez", c)?;
 
-    for (width, height) in ggez::graphics::get_fullscreen_modes(ctx, 0).unwrap() {
+    if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
+        let mut path = path::PathBuf::from(manifest_dir);
+        path.push("resources");
+        ctx.filesystem.mount(&path, true);
+    }
+
+    let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf", 16)?;
+
+    for (width, height) in ggez::graphics::get_fullscreen_modes(ctx, 0)? {
         println!("{}x{}", width, height);
     }
 
-    let mut state = MainState::new();
+    let mut state = MainState::new(font);
 
-    event::run(ctx, &mut state).unwrap();
+    event::run(ctx, &mut state)
 }
 
 struct Enemy {
@@ -53,7 +66,7 @@ impl Enemy {
         }
 
         if self.y + self.height > 600.0 {
-            self.y = 600.0 - self.height;//self.y - (self.y + self.height - 600.0);
+            self.y = 600.0 - self.height;
             self.vy = -self.vy;
         }
     }
@@ -77,6 +90,7 @@ impl Player {
 }
 
 struct MainState {
+    font: graphics::Font,
     player: Player,
     enemies: Vec<Enemy>,
     last_enemy_added: Instant,
@@ -84,14 +98,32 @@ struct MainState {
 
 impl MainState {
 
-    fn new() -> MainState {
-        MainState{player: Player::new(), enemies: Vec::new(), last_enemy_added: Instant::now()}
+    fn new(font: graphics::Font) -> MainState {
+        MainState{player: Player::new(), enemies: Vec::new(), last_enemy_added: Instant::now(), font: font}
     }
 
     fn last_enemy_added_millis(&self) -> u64 {
         let duration = self.last_enemy_added.elapsed();
 
         duration.as_secs() * 1_000 + duration.subsec_millis() as u64
+    }
+
+    fn draw_fps(&mut self, ctx: &mut Context) -> GameResult<()> {
+        let fps = get_fps(ctx).round();
+
+        let text = graphics::Text::new(ctx, &format!("fps {}", fps), &self.font)?;
+
+        let dest_point = graphics::Point2::new(10.0, 10.0);
+
+        graphics::draw_ex(
+                ctx,
+                &text,
+                graphics::DrawParam {
+                    dest: dest_point,
+                    color: Some(graphics::Color::from((255, 255, 255, 255))),
+                    ..Default::default()
+                },
+        )
     }
 
 }
@@ -145,6 +177,8 @@ impl event::EventHandler for MainState {
                         enemy.height
                     ))?;
         }
+
+        self.draw_fps(ctx)?;
 
         graphics::present(ctx);
 

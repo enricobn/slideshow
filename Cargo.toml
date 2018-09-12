@@ -3,6 +3,11 @@ name = "quadfight"
 version = "0.1.0"
 authors = ["Enrico Benedetti <enrico_benedetti@yahoo.com>"]
 
+[features]
+# If this feature is enabled, it will add <cargo root dir>/resources/ to
+# the resource search path.
+cargo-resource-root = []
+
 [dependencies]
-ggez = "0.4"
+ggez = { version = "0.4", features = ["cargo-resource-root"] }
 rand = "0.5.5"
