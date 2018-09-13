@@ -3,7 +3,7 @@ use std::ops::IndexMut;
 use std::time::Instant;
 
 use ggez::*;
-use ggez::event::{self, EventHandler, Keycode, Mod, MouseState};
+use ggez::event::{self, EventHandler, Keycode, Mod, MouseState, MouseButton};
 use ggez::graphics::{DrawMode, Point2, Rect, Color};
 use ggez::timer::{get_fps, get_delta, duration_to_f64};
 use rand::*;
@@ -99,6 +99,7 @@ impl Quad {
 pub struct FlowState {
     font: graphics::Font,
     quads: Vec<Quad>,
+    ctrl: bool,
 }
 
 impl FlowState {
@@ -118,7 +119,7 @@ impl FlowState {
             x += SIZE;
         }
 
-        FlowState{quads, font: font}
+        FlowState{quads, font: font, ctrl: false}
     }
 
     fn draw_fps(&self, ctx: &mut Context) -> GameResult<()> {
@@ -137,6 +138,17 @@ impl FlowState {
                     ..Default::default()
                 },
         )
+    }
+
+    fn find_quad<'a>(&'a mut self, x: f32, y: f32) -> Option<&'a mut Quad> {
+        for quad in self.quads.iter_mut() {
+            if x >= quad.x && x <= quad.x + quad.width {
+                if y >= quad.y && y  <= quad.y + quad.height {
+                    return Some(quad);
+                }
+            }
+        }
+        None
     }
 
 }
@@ -211,7 +223,14 @@ impl EventHandler for FlowState {
                     i += 1;
                 }     
             },
+            Keycode::RCtrl | Keycode::LCtrl => self.ctrl = true,
             _ => (), // Do nothing
+        }
+    }
+
+    fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+        if keycode == Keycode::RCtrl || keycode == Keycode::LCtrl {
+            self.ctrl = false;
         }
     }
 
@@ -224,21 +243,35 @@ impl EventHandler for FlowState {
         _xrel: i32,
         _yrel: i32,
     ) {
-        let mut i: usize = 0;
-        while i < self.quads.len() {
-            let quad = self.quads.index_mut(i);
-            if _x as f32 >= quad.x && _x as f32 <= quad.x + quad.width {
-                if _y as f32 >= quad.y && _y as f32 <= quad.y + quad.height {
-                    // quad.angle = 0.0;
+        if self.ctrl {
+            match self.find_quad(_x as f32, _y as f32) {
+                Some(quad) => 
                     if quad.faced_up() {
                         quad.va = 2.0;
                     } else {
                         quad.va = -2.0;
-                    }
-                }
-            }
-            i += 1;
+                    },
+                _ => ()
+            };
         }
+    }
+
+    fn mouse_button_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        _button: MouseButton,
+        _x: i32,
+        _y: i32,
+    ) {
+        match self.find_quad(_x as f32, _y as f32) {
+            Some(quad) => 
+                if quad.faced_up() {
+                    quad.va = 2.0;
+                } else {
+                    quad.va = -2.0;
+                },
+            _ => ()
+        };
     }
 
 }
