@@ -8,6 +8,8 @@ use ggez::graphics::{DrawMode, Point2, Rect, Color};
 use ggez::timer::{get_fps, get_delta, duration_to_f64};
 use rand::*;
 
+use fps::*;
+
 const SIZE : f32 = 20.0;
 const MARGIN : f32 = 0.5;
 const PI : f64 = std::f64::consts::PI;
@@ -122,25 +124,7 @@ impl FlowState {
         FlowState{quads, font: font, ctrl: false}
     }
 
-    fn draw_fps(&self, ctx: &mut Context) -> GameResult<()> {
-        let fps = get_fps(ctx).round();
-
-        let text = graphics::Text::new(ctx, &format!("fps {}", fps), &self.font)?;
-
-        let dest_point = graphics::Point2::new(10.0, 10.0);
-
-        graphics::draw_ex(
-                ctx,
-                &text,
-                graphics::DrawParam {
-                    dest: dest_point,
-                    color: Some(graphics::Color::from((255, 255, 255, 255))),
-                    ..Default::default()
-                },
-        )
-    }
-
-    fn find_quad<'a>(&'a mut self, x: f32, y: f32) -> Option<&'a mut Quad> {
+    fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
         for quad in self.quads.iter_mut() {
             if x >= quad.x && x <= quad.x + quad.width {
                 if y >= quad.y && y  <= quad.y + quad.height {
@@ -204,7 +188,7 @@ impl EventHandler for FlowState {
             graphics::draw(ctx, &mesh, Point2::new(0.0, 0.0), 0.0)?;
         }
 
-        self.draw_fps(ctx)?;
+        draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
 
         graphics::present(ctx);
 

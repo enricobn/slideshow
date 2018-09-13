@@ -7,6 +7,8 @@ use ggez::graphics::{DrawMode, Point2, Rect, Color};
 use ggez::timer::{get_fps, get_delta, duration_to_f64};
 use rand::*;
 
+use fps::*;
+
 pub struct Enemy {
     x: f32,
     y: f32,
@@ -148,7 +150,7 @@ impl EventHandler for MainState {
                     self.player.height
                 ))?;
 
-        self.draw_fps(ctx)?;
+        draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
 
         graphics::present(ctx);
 
