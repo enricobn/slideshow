@@ -2,10 +2,12 @@ extern crate ggez;
 extern crate rand;
 
 mod fight;
+mod flow;
 
 use std::env;
 use std::path;
 use fight::*;
+use flow::*;
 
 use ggez::*;
 use ggez::conf::FullscreenType;
@@ -16,7 +18,7 @@ fn main() -> GameResult<()> {
     // c.window_mode.fullscreen_type = FullscreenType::Desktop;
     // c.window_mode.width = 60;
     // c.window_mode.height = 60;
-    c.window_mode.vsync = true;
+    c.window_mode.vsync = false;
 
     println!("screen: {}x{}", c.window_mode.width, c.window_mode.height);
 
@@ -33,7 +35,8 @@ fn main() -> GameResult<()> {
     }
 
     let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf", 16)?;
-    let mut state = MainState::new(font);
+    // let mut state = MainState::new(font);
+    let mut state = FlowState::new(font);
 
     event::run(ctx, &mut state)
 }
