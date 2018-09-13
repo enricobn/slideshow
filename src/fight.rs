@@ -77,24 +77,6 @@ impl MainState {
         duration.as_secs() * 1_000 + duration.subsec_millis() as u64
     }
 
-    fn draw_fps(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let fps = get_fps(ctx).round();
-
-        let text = graphics::Text::new(ctx, &format!("fps {}", fps), &self.font)?;
-
-        let dest_point = graphics::Point2::new(10.0, 10.0);
-
-        graphics::draw_ex(
-                ctx,
-                &text,
-                graphics::DrawParam {
-                    dest: dest_point,
-                    color: Some(graphics::Color::from((255, 255, 255, 255))),
-                    ..Default::default()
-                },
-        )
-    }
-
 }
 
 impl EventHandler for MainState {
