@@ -1,3 +1,4 @@
+use std;
 use std::ops::IndexMut;
 use std::time::Instant;
 
@@ -7,54 +8,90 @@ use ggez::graphics::{DrawMode, Point2, Rect, Color};
 use ggez::timer::{get_fps, get_delta, duration_to_f64};
 use rand::*;
 
+const SIZE : f32 = 20.0;
+const MARGIN : f32 = 0.5;
+const PI : f64 = std::f64::consts::PI;
+
+lazy_static! {
+    pub static ref UP_COLOR: Color = {
+        Color::new(0.5, 0.0, 0.0, 1.0)
+    };
+
+    pub static ref DOWN_COLOR: Color = {
+        Color::new(0.0, 0.5, 0.0, 1.0)
+    };
+}
+
 pub struct Quad {
     x: f32,
     y: f32,
     width: f32,
     height: f32,
-    color: Color,
-    angle: f32,
-    va: f32,
+    // color_up: Color,
+    // color_down: Color,
+    angle: f64,
+    va: f64,
+}
+
+/**
+ * true -> positive
+ * false -> negative
+ */
+fn sign(n: f64) -> bool {
+    n >= 0.0
 }
 
 impl Quad {
 
-    fn new(x: f32, y: f32, width: f32, height: f32, color: Color, angle: f32, va: f32) -> Quad {
-        Quad{x: x, y: y, width: width, height: height, color: color, angle: angle, va: va}
+    fn new(x: f32, y: f32, width: f32, height: f32, /*color_up: Color, color_down: Color,*/ angle: f64, va: f64) -> Quad {
+        Quad{x: x, y: y, width: width, height: height, /*color_up: color_up, color_down: color_down,*/ angle: angle, va: va}
     }
 
     fn update(&mut self, delta: f64) {
-        self.angle += self.va * delta as f32;
+        let prev_angle = self.angle;
+        self.angle += self.va * delta;
 
-        /*if self.angle < 0.0 {
-            self.angle = -self.y;
-            self.vy = -self.vy;
-        }*/
+        // if self.angle != 0.0 {
+        //      println!("{} ({})", self.angle, self.angle / PI * 180.0);
+        // }
 
-        /*if self.y + self.height > 600.0 {
-            self.y = 600.0 - self.height;
-            self.vy = -self.vy;
+        if sign(self.angle.sin()) != sign(prev_angle) {
+            self.va = 0.0;
+            self.angle = (self.angle / PI).round() * PI;
         }
-        */
+
     }
 
     fn draw(&self, _ctx: &mut Context, mb: &mut graphics::MeshBuilder) {
+        let delta = self.angle.sin().abs() as f32 * SIZE / 2.0;
+        // if delta != 0.0 {
+        //     println!("{}", delta);
+        //     println!("{} {} {} {} {}", self.x, Point2::new(self.x + delta + MARGIN, self.y + MARGIN),
+        //         Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + MARGIN),
+        //         Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + self.width - 2.0 * MARGIN),
+        //         Point2::new(self.x + delta + MARGIN, self.y + self.width - 2.0 * MARGIN));
+        // }
+
         mb.polygon(DrawMode::Fill, 
             &[
-                Point2::new(self.x, self.y),
-                Point2::new(self.x + self.width, self.y),
-                Point2::new(self.x + self.width, self.y + self.width),
-                Point2::new(self.x, self.y + self.width),
+                Point2::new(self.x + delta + MARGIN, self.y + MARGIN),
+                Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + MARGIN),
+                Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + self.width - 2.0 * MARGIN),
+                Point2::new(self.x + delta + MARGIN, self.y + self.width - 2.0 * MARGIN),
             ],
         );
+    }
 
-        // graphics::rectangle(_ctx, DrawMode::Fill, Rect::new(
-        //             self.x, 
-        //             self.y, 
-        //             self.width, 
-        //             self.height
-        //         ))?;
-        // mb.build(_ctx)
+    // fn get_color(&self) -> &Color {
+    //     if self.faced_up() {
+    //         &self.color_up
+    //     } else {
+    //         &self.color_down
+    //     }
+    // }
+
+    fn faced_up(&self) -> bool {
+        self.angle.cos() >= 0.0
     }
 
 }
@@ -63,8 +100,6 @@ pub struct FlowState {
     font: graphics::Font,
     quads: Vec<Quad>,
 }
-
-const SIZE : f32 = 20.0;
 
 impl FlowState {
 
@@ -76,7 +111,7 @@ impl FlowState {
         while x < 800.0 {
             y = 0.0;
             while y < 600.0 {
-                let quad = Quad::new(x, y, SIZE, SIZE, Color::new(0.5, 0.0, 0.0, 1.0), 0.0, 0.0);
+                let quad = Quad::new(x, y, SIZE, SIZE, /*Color::new(0.5, 0.0, 0.0, 1.0), Color::new(0.0, 0.5, 0.0, 1.0),*/ 0.0, 0.0);
                 quads.push(quad);
                 y += SIZE;
             }
@@ -127,32 +162,35 @@ impl EventHandler for FlowState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         graphics::clear(ctx);
 
-        let mut mb = graphics::MeshBuilder::new();
+        {
+            let mut mb = graphics::MeshBuilder::new();
 
-        for quad in &self.quads {
-            if quad.angle != 0.0 {
-                continue;
+            for quad in &self.quads {
+                if !quad.faced_up() {
+                    continue;
+                }
+                quad.draw(ctx, &mut mb);
             }
 
-            quad.draw(ctx, &mut mb);
+            let mesh = mb.build(ctx)?;
+            graphics::set_color(ctx, *UP_COLOR)?;
+            graphics::draw(ctx, &mesh, Point2::new(0.0, 0.0), 0.0)?;
         }
 
-        let mesh = mb.build(ctx)?;
-        graphics::set_color(ctx, graphics::Color::from((100, 0, 0, 255)))?;
-        graphics::draw(ctx, &mesh, Point2::new(0.0, 0.0), 0.0)?;
+        {
+            let mut mb = graphics::MeshBuilder::new();
 
-        let mut mb = graphics::MeshBuilder::new();
-        for quad in &self.quads {
-            if quad.angle == 0.0 {
-                continue;
+            for quad in &self.quads {
+                if quad.faced_up() {
+                    continue;
+                }
+                quad.draw(ctx, &mut mb);
             }
-            
-            quad.draw(ctx, &mut mb);
-        }
 
-        let mesh = mb.build(ctx)?;
-        graphics::set_color(ctx, graphics::Color::from((0, 0, 0, 255)))?;
-        graphics::draw(ctx, &mesh, Point2::new(0.0, 0.0), 0.0)?;
+            let mesh = mb.build(ctx)?;
+            graphics::set_color(ctx, *DOWN_COLOR)?;
+            graphics::draw(ctx, &mesh, Point2::new(0.0, 0.0), 0.0)?;
+        }
 
         self.draw_fps(ctx)?;
 
@@ -169,6 +207,7 @@ impl EventHandler for FlowState {
                 while i < self.quads.len() {
                     let quad = self.quads.index_mut(i);
                     quad.angle = 0.0;
+                    quad.va = 0.0;
                     i += 1;
                 }     
             },
@@ -190,8 +229,12 @@ impl EventHandler for FlowState {
             let quad = self.quads.index_mut(i);
             if _x as f32 >= quad.x && _x as f32 <= quad.x + quad.width {
                 if _y as f32 >= quad.y && _y as f32 <= quad.y + quad.height {
-                    // quad.color = graphics::Color::from((0, 0, 0, 255));
-                    quad.angle = 1.0;
+                    // quad.angle = 0.0;
+                    if quad.faced_up() {
+                        quad.va = 2.0;
+                    } else {
+                        quad.va = -2.0;
+                    }
                 }
             }
             i += 1;

@@ -1,5 +1,7 @@
 extern crate ggez;
 extern crate rand;
+#[macro_use]
+extern crate lazy_static;
 
 mod fight;
 mod flow;
@@ -23,6 +25,7 @@ fn main() -> GameResult<()> {
     println!("screen: {}x{}", c.window_mode.width, c.window_mode.height);
 
     let ctx = &mut Context::load_from_conf("super_simple", "ggez", c)?;
+    graphics::set_background_color(ctx, graphics::Color::from((0, 0, 0, 255)));
 
     if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
         let mut path = path::PathBuf::from(manifest_dir);
