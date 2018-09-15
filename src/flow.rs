@@ -13,6 +13,7 @@ use quad::*;
 
 const SIZE : f32 = 20.0;
 const MARGIN : f32 = 0.5;
+const FLIP_VELOCITY : f64 = 3.0;
 
 lazy_static! {
     pub static ref UP_COLOR: Color = {
@@ -70,7 +71,7 @@ impl FlowState {
         let x = column as f32 * SIZE + SIZE / 2.0;
         for quad in self.quads.iter_mut() {
             if x >= quad.x && x <= quad.x + quad.width {
-                quad.va = 2.0;
+                quad.flip_right(FLIP_VELOCITY);
                 // println!("swapping {}", x);
             }
         }
@@ -155,7 +156,7 @@ impl EventHandler for FlowState {
     fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         match keycode {
             Keycode::Escape => ctx.quit().unwrap(),
-            Keycode::R => {
+            /*Keycode::R => {
                 let mut i: usize = 0;
                 while i < self.quads.len() {
                     let quad = self.quads.index_mut(i);
@@ -163,7 +164,7 @@ impl EventHandler for FlowState {
                     quad.va = 0.0;
                     i += 1;
                 }     
-            },
+            },*/
             Keycode::RCtrl | Keycode::LCtrl => self.ctrl = true,
             _ => (), // Do nothing
         }
@@ -188,9 +189,9 @@ impl EventHandler for FlowState {
             match self.find_quad(x as f32, y as f32) {
                 Some(quad) => 
                     if quad.faced_up() {
-                        quad.va = 2.0;
+                        quad.flip_right(FLIP_VELOCITY);
                     } else {
-                        quad.va = -2.0;
+                        quad.flip_left(FLIP_VELOCITY);
                     },
                 _ => ()
             };
@@ -207,9 +208,9 @@ impl EventHandler for FlowState {
         match self.find_quad(x as f32, y as f32) {
             Some(quad) => 
                 if quad.faced_up() {
-                    quad.va = 2.0;
+                    quad.flip_right(FLIP_VELOCITY);
                 } else {
-                    quad.va = -2.0;
+                    quad.flip_left(FLIP_VELOCITY);
                 },
             _ => ()
         };

@@ -11,8 +11,8 @@ pub struct Quad {
     pub height: f32,
     // color_up: Color,
     // color_down: Color,
-    pub angle: f64,
-    pub va: f64,
+    angle: f64,
+    va: f64,
 }
 
 impl Quad {
@@ -29,10 +29,14 @@ impl Quad {
         //      println!("{} ({})", self.angle, self.angle / PI * 180.0);
         // }
 
-        if sign(self.angle.sin()) != sign(prev_angle) {
-            self.va = 0.0;
-            self.angle = (self.angle / PI).round() * PI;
-        }
+        // if self.flip_h {
+            let actual_sign = sign(self.angle.sin());
+            if actual_sign != sign(prev_angle.sin()) {
+                self.angle = (self.angle / PI).round() * PI;
+                self.va = 0.0;
+                // self.flip_h = false;
+            }
+        // }
 
     }
 
@@ -68,4 +72,50 @@ impl Quad {
         self.angle.cos() >= 0.0
     }
 
+    pub fn flip_right(&mut self, velocity: f64) {
+        self.va = velocity;
+        // since we stop rotation when sin sign changes, I want to be sure that the actual sin sign is correct.
+        self.angle += 0.00001;
+    }
+
+    pub fn flip_left(&mut self, velocity: f64) {
+        self.va = -velocity;
+        // since we stop rotation when sin sign changes, I want to be sure that the actual sin sign is correct.
+        self.angle -= 0.00001;
+    }
+
+    fn flipping(&self) -> bool {
+        self.va != 0.0
+    }
+
+}
+
+#[cfg(test)]
+
+#[test]
+fn flip() {
+    let mut quad = Quad::new(0.0, 0.0, 100.0, 100.0, 0.0, 0.0);
+
+    // first flip
+    quad.flip_right(2.0);
+
+    while quad.flipping() {
+        quad.update(0.1);
+    }
+
+    // second flip
+    quad.flip_right(2.0);
+    quad.update(0.1);
+
+    assert_eq!(true, quad.flipping());
+    
+    while quad.flipping() {
+        quad.update(0.1);
+    }
+
+    // third flip
+    quad.flip_right(2.0);
+    quad.update(0.1);
+
+    assert_eq!(true, quad.flipping());
 }
