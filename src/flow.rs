@@ -1,17 +1,19 @@
 use std;
 use std::ops::IndexMut;
 use std::time::Duration;
+use std::time::Instant;
 
 use ggez::*;
 use ggez::event::{EventHandler, Keycode, Mod, MouseState, MouseButton};
-use ggez::graphics::{DrawMode, Point2, Color};
+use ggez::graphics::{Color};
 use ggez::timer::{get_delta, duration_to_f64};
+use ggez::timer::{get_fps};
 
 use fps::*;
 use sync_timer::*;
 use quad::*;
 
-const SIZE : f32 = 20.0;
+const SIZE : f32 = 10.0;
 const MARGIN : f32 = 0.5;
 const FLIP_VELOCITY : f64 = 3.0;
 
@@ -31,6 +33,7 @@ pub struct FlowState {
     ctrl: bool,
     swapping_column: usize,
     timer: SyncTimer,
+    last_fps_print: Instant,
 }
 
 impl FlowState {
@@ -43,7 +46,7 @@ impl FlowState {
         while x < 800.0 {
             y = 0.0;
             while y < 600.0 {
-                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, /*Color::new(0.5, 0.0, 0.0, 1.0), Color::new(0.0, 0.5, 0.0, 1.0),*/ 0.0, 0.0);
+                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *UP_COLOR, *DOWN_COLOR, 0.0, 0.0);
                 quads.push(quad);
                 y += SIZE;
             }
@@ -53,7 +56,7 @@ impl FlowState {
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("swap_column", Duration::from_millis(200), true));
 
-        FlowState{quads, font: font, ctrl: false, swapping_column: 0, timer: timer}
+        FlowState{quads, font: font, ctrl: false, swapping_column: 0, timer: timer, last_fps_print: Instant::now()}
     }
 
     fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
@@ -114,39 +117,27 @@ impl EventHandler for FlowState {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::clear(ctx);
+        // graphics::clear(ctx);
 
-        {
-            let mut mb = graphics::MeshBuilder::new();
+        graphics::set_color(ctx, Color::new(0.0, 0.0, 0.0, 255.0))?;
 
-            for quad in &self.quads {
-                if !quad.faced_up() {
-                    continue;
-                }
-                quad.draw(ctx, &mut mb);
+        for quad in &self.quads {
+            if !quad.is_updated() {
+               continue; 
             }
-
-            let mesh = mb.build(ctx)?;
-            graphics::set_color(ctx, *UP_COLOR)?;
-            graphics::draw(ctx, &mesh, Point2::new(0.0, 0.0), 0.0)?;
+            quad.draw_bk(ctx)?;
         }
 
-        {
-            let mut mb = graphics::MeshBuilder::new();
-
-            for quad in &self.quads {
-                if quad.faced_up() {
-                    continue;
-                }
-                quad.draw(ctx, &mut mb);
-            }
-
-            let mesh = mb.build(ctx)?;
-            graphics::set_color(ctx, *DOWN_COLOR)?;
-            graphics::draw(ctx, &mesh, Point2::new(0.0, 0.0), 0.0)?;
+        for quad in self.quads.iter_mut() {
+            quad.draw(ctx)?;
         }
 
-        draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
+        // draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
+        if Instant::now().duration_since(self.last_fps_print).as_secs() >= 1 {
+            let fps = get_fps(ctx).round();
+            println!("fps: {}", fps);
+            self.last_fps_print = Instant::now();
+        }
 
         graphics::present(ctx);
 

@@ -16,4 +16,5 @@ pub fn draw_fps(ctx: &mut Context, font: &graphics::Font, dest: Point2, color: C
                 ..Default::default()
             },
     )
+
 }
