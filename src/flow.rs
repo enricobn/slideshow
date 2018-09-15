@@ -9,10 +9,10 @@ use ggez::timer::{get_delta, duration_to_f64};
 
 use fps::*;
 use sync_timer::*;
+use quad::*;
 
 const SIZE : f32 = 20.0;
 const MARGIN : f32 = 0.5;
-const PI : f64 = std::f64::consts::PI;
 
 lazy_static! {
     pub static ref UP_COLOR: Color = {
@@ -22,80 +22,6 @@ lazy_static! {
     pub static ref DOWN_COLOR: Color = {
         Color::new(0.0, 0.5, 0.0, 1.0)
     };
-}
-
-pub struct Quad {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
-    // color_up: Color,
-    // color_down: Color,
-    angle: f64,
-    va: f64,
-}
-
-/**
- * true -> positive
- * false -> negative
- */
-fn sign(n: f64) -> bool {
-    n >= 0.0
-}
-
-impl Quad {
-
-    fn new(x: f32, y: f32, width: f32, height: f32, /*color_up: Color, color_down: Color,*/ angle: f64, va: f64) -> Quad {
-        Quad{x: x, y: y, width: width, height: height, /*color_up: color_up, color_down: color_down,*/ angle: angle, va: va}
-    }
-
-    fn update(&mut self, delta: f64) {
-        let prev_angle = self.angle;
-        self.angle += self.va * delta;
-
-        // if self.angle != 0.0 {
-        //      println!("{} ({})", self.angle, self.angle / PI * 180.0);
-        // }
-
-        if sign(self.angle.sin()) != sign(prev_angle) {
-            self.va = 0.0;
-            self.angle = (self.angle / PI).round() * PI;
-        }
-
-    }
-
-    fn draw(&self, _ctx: &mut Context, mb: &mut graphics::MeshBuilder) {
-        let delta = self.angle.sin().abs() as f32 * SIZE / 2.0;
-        // if delta != 0.0 {
-        //     println!("{}", delta);
-        //     println!("{} {} {} {} {}", self.x, Point2::new(self.x + delta + MARGIN, self.y + MARGIN),
-        //         Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + MARGIN),
-        //         Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + self.width - 2.0 * MARGIN),
-        //         Point2::new(self.x + delta + MARGIN, self.y + self.width - 2.0 * MARGIN));
-        // }
-
-        mb.polygon(DrawMode::Fill, 
-            &[
-                Point2::new(self.x + delta + MARGIN, self.y + MARGIN),
-                Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + MARGIN),
-                Point2::new(self.x + self.width - delta - 2.0 * MARGIN, self.y + self.width - 2.0 * MARGIN),
-                Point2::new(self.x + delta + MARGIN, self.y + self.width - 2.0 * MARGIN),
-            ],
-        );
-    }
-
-    // fn get_color(&self) -> &Color {
-    //     if self.faced_up() {
-    //         &self.color_up
-    //     } else {
-    //         &self.color_down
-    //     }
-    // }
-
-    fn faced_up(&self) -> bool {
-        self.angle.cos() >= 0.0
-    }
-
 }
 
 pub struct FlowState {
@@ -116,7 +42,7 @@ impl FlowState {
         while x < 800.0 {
             y = 0.0;
             while y < 600.0 {
-                let quad = Quad::new(x, y, SIZE, SIZE, /*Color::new(0.5, 0.0, 0.0, 1.0), Color::new(0.0, 0.5, 0.0, 1.0),*/ 0.0, 0.0);
+                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, /*Color::new(0.5, 0.0, 0.0, 1.0), Color::new(0.0, 0.5, 0.0, 1.0),*/ 0.0, 0.0);
                 quads.push(quad);
                 y += SIZE;
             }

@@ -7,6 +7,8 @@ mod fight;
 mod flow;
 mod fps;
 mod sync_timer;
+mod quad;
+mod globals;
 
 use std::env;
 use std::path;
