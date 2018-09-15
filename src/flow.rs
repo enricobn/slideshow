@@ -1,14 +1,14 @@
 use std;
 use std::ops::IndexMut;
-use std::time::Instant;
+use std::time::Duration;
 
 use ggez::*;
-use ggez::event::{self, EventHandler, Keycode, Mod, MouseState, MouseButton};
-use ggez::graphics::{DrawMode, Point2, Rect, Color};
-use ggez::timer::{get_fps, get_delta, duration_to_f64};
-use rand::*;
+use ggez::event::{EventHandler, Keycode, Mod, MouseState, MouseButton};
+use ggez::graphics::{DrawMode, Point2, Color};
+use ggez::timer::{get_delta, duration_to_f64};
 
 use fps::*;
+use sync_timer::*;
 
 const SIZE : f32 = 20.0;
 const MARGIN : f32 = 0.5;
@@ -102,6 +102,8 @@ pub struct FlowState {
     font: graphics::Font,
     quads: Vec<Quad>,
     ctrl: bool,
+    swapping_column: usize,
+    timer: SyncTimer,
 }
 
 impl FlowState {
@@ -121,7 +123,10 @@ impl FlowState {
             x += SIZE;
         }
 
-        FlowState{quads, font: font, ctrl: false}
+        let mut timer = SyncTimer::new();
+        timer.add(SyncEvent::new("swap_column", Duration::from_millis(200), true));
+
+        FlowState{quads, font: font, ctrl: false, swapping_column: 0, timer: timer}
     }
 
     fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
@@ -135,6 +140,16 @@ impl FlowState {
         None
     }
 
+    fn swap_column_quads(&mut self, column: usize) {
+        let x = column as f32 * SIZE + SIZE / 2.0;
+        for quad in self.quads.iter_mut() {
+            if x >= quad.x && x <= quad.x + quad.width {
+                quad.va = 2.0;
+                // println!("swapping {}", x);
+            }
+        }
+    }
+
 }
 
 impl EventHandler for FlowState {
@@ -143,13 +158,29 @@ impl EventHandler for FlowState {
         let delta_duration = get_delta(_ctx);
         let delta = duration_to_f64(delta_duration);
 
-        let mut rng = thread_rng();
-
         let mut i: usize = 0;
         while i < self.quads.len() {
             let quad = self.quads.index_mut(i);
             quad.update(delta);
             i += 1;
+        }
+
+        let fired = self.timer.fired().clone();
+
+        for id in fired {
+            if id == "swap_column" {
+                if (self.swapping_column as f32) < (800.0 / SIZE) {
+                    {
+                        let sw = self.swapping_column;
+                        self.swap_column_quads(sw);
+                        // println!("swapping column {}", sw);
+                    }
+                    self.swapping_column += 1;
+                } else {
+                    // println!("restart swap", );
+                    self.swapping_column = 0;
+                }
+            }
         }
 
         Ok(())
@@ -212,7 +243,7 @@ impl EventHandler for FlowState {
         }
     }
 
-    fn key_up_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+    fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
         if keycode == Keycode::RCtrl || keycode == Keycode::LCtrl {
             self.ctrl = false;
         }
@@ -222,13 +253,13 @@ impl EventHandler for FlowState {
         &mut self,
         _ctx: &mut Context,
         _state: MouseState,
-        _x: i32,
-        _y: i32,
+        x: i32,
+        y: i32,
         _xrel: i32,
         _yrel: i32,
     ) {
         if self.ctrl {
-            match self.find_quad(_x as f32, _y as f32) {
+            match self.find_quad(x as f32, y as f32) {
                 Some(quad) => 
                     if quad.faced_up() {
                         quad.va = 2.0;
@@ -244,10 +275,10 @@ impl EventHandler for FlowState {
         &mut self,
         _ctx: &mut Context,
         _button: MouseButton,
-        _x: i32,
-        _y: i32,
+        x: i32,
+        y: i32,
     ) {
-        match self.find_quad(_x as f32, _y as f32) {
+        match self.find_quad(x as f32, y as f32) {
             Some(quad) => 
                 if quad.faced_up() {
                     quad.va = 2.0;

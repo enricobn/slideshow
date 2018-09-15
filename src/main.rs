@@ -6,6 +6,7 @@ extern crate lazy_static;
 mod fight;
 mod flow;
 mod fps;
+mod sync_timer;
 
 use std::env;
 use std::path;

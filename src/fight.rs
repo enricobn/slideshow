@@ -2,9 +2,9 @@ use std::ops::IndexMut;
 use std::time::Instant;
 
 use ggez::*;
-use ggez::event::{self, EventHandler, Keycode, Mod};
-use ggez::graphics::{DrawMode, Point2, Rect, Color};
-use ggez::timer::{get_fps, get_delta, duration_to_f64};
+use ggez::event::{EventHandler, Keycode, Mod};
+use ggez::graphics::{DrawMode, Rect, Color};
+use ggez::timer::{get_delta, duration_to_f64};
 use rand::*;
 
 use fps::*;
