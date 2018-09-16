@@ -45,34 +45,7 @@ fn main() -> GameResult<()> {
     }
 
     let font = graphics::Font::new(ctx, "/DejaVuSerif.ttf", 16)?;
-    // let mut state = MainState::new(font);
-    
-    // // let img = image::open("/home/enrico/Pictures/jose-raul-capablanca.jpg").unwrap();
-    // let img = image::open("/home/enrico/Pictures/Nokia 6600/Foto(031).jpg").unwrap();
-
-    // let (width, height) = img.dimensions();
-    // println!("img {}x{}", width, height);
-
-    // let grid_width = 800.0 / flow::SIZE;
-    // let grid_height = 600.0 / flow::SIZE;
-
-    // println!("grid {}x{}", grid_width, grid_height);
-
-    // // let grid_max = grid_width.max(grid_height);
-
-    // // let img_max = width.max(height);
-
-    // let width_coeff = width as f32 / grid_width;
-    // let height_coeff = height as f32 / grid_height;
-
-    // let coeff = width_coeff.max(height_coeff);
-
-    // let new_img = image::imageops::resize(&img, (width as f32 / coeff) as u32, (height as f32 / coeff) as u32, image::FilterType::Gaussian);
-    
-    // let (new_width, new_height) = new_img.dimensions();
-
-    // println!("new img {}x{}", new_width, new_height);
-    
+     
     let args: Vec<String> = env::args().collect();
 
     let mut state = FlowState::new(font, args);

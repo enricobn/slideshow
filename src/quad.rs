@@ -107,6 +107,14 @@ impl Quad {
         self.updated
     }
 
+    pub fn set_up_color(&mut self, color: Color) {
+        self.up_color = color;
+    }
+
+    pub fn set_down_color(&mut self, color: Color) {
+        self.down_color = color;
+    }
+
     fn flipping(&self) -> bool {
         self.va != 0.0
     }

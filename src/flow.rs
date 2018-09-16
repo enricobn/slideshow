@@ -2,6 +2,7 @@ use std;
 use std::ops::IndexMut;
 use std::time::Duration;
 use std::time::Instant;
+use std::path::Path;
 
 use ggez::*;
 use ggez::event::{EventHandler, Keycode, Mod, MouseState, MouseButton};
@@ -37,65 +38,70 @@ pub struct FlowState {
     font: graphics::Font,
     quads: Vec<Quad>,
     ctrl: bool,
-    swapping_column: usize,
+    swapping_column: Option<usize>,
     timer: SyncTimer,
     last_fps_print: Instant,
+    file_names: Vec<String>,
+    file_index: usize,
+    down_color: bool,
 }
 
 impl FlowState {
 
     pub fn new(font: graphics::Font, args: Vec<String>) -> FlowState {
-        let maybe_file_name = args.get(1);
+        let folder_name = args.get(1);
 
-        if maybe_file_name.is_none() {
-            println!("file name is mandatory", );
+        if folder_name.is_none() {
+            println!("folder is mandatory", );
             panic!();
         }
 
-        let file_name = maybe_file_name.unwrap();
-        let image = load_and_resize_image(file_name);
+        let directory = Path::new(folder_name.unwrap());
 
-        let img = if image.is_err() {
-            println!("cannot load image {}: {}", file_name, image.unwrap_err());
+        let paths = directory.read_dir().unwrap();
+
+        let mut file_names = Vec::new();
+
+        for path in paths {
+            if let Ok(entry) = path {
+                if let Ok(file_type) = entry.file_type() {
+                    if file_type.is_file() {
+                        let file_name = String::from(entry.path().to_str().unwrap());
+                        if file_name.to_uppercase().ends_with("PNG") ||
+                            file_name.to_uppercase().ends_with("JPG") ||
+                            file_name.to_uppercase().ends_with("JPEG") ||
+                            file_name.to_uppercase().ends_with("BMP") {
+                                file_names.push(file_name);
+                            }
+                    }
+                }
+            }
+        }
+
+        if file_names.is_empty() {
+            println!("No image files found in {}", folder_name.unwrap());
             panic!();
-        } else {
-            image.unwrap()
-        };
+        }
 
         let mut quads = Vec::new();
         let mut x = 0.0;
         let mut y = 0.0;
 
-        let grid_width = 800.0 / SIZE;
-        let grid_height = 600.0 / SIZE;
-
-        let (img_width, img_height) = img.dimensions();
-
-        let mut ix : u32 = 0;
-        let mut iy : u32 = 0;
-
         while x < 800.0 {
             y = 0.0;
-            iy = 0;
             while y < 600.0 {
-                let down_color = if ix >= img_width || iy >= img_height {
-                    *BLACK
-                } else {
-                    pixel_to_color(img.get_pixel(ix, iy))
-                };
-                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *UP_COLOR, down_color, 0.0, 0.0);
+                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *BLACK, *BLACK, 0.0, 0.0);
                 quads.push(quad);
                 y += SIZE;
-                iy += 1;
             }
             x += SIZE;
-            ix += 1;
         }
 
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("swap_column", Duration::from_millis(FLIP_DELAY), true));
 
-        FlowState{quads, font: font, ctrl: false, swapping_column: 0, timer: timer, last_fps_print: Instant::now()}
+        FlowState{quads, font: font, ctrl: false, swapping_column: None, timer: timer, last_fps_print: Instant::now(),
+            file_names: file_names, file_index: 0, down_color: true}
     }
 
     fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
@@ -119,6 +125,45 @@ impl FlowState {
         }
     }
 
+    fn load_image(&mut self) {
+        let file_name = self.file_names.get(self.file_index).unwrap();
+        println!("loading image {}", file_name);
+        let image = load_and_resize_image(file_name);
+
+        let img = if image.is_err() {
+            println!("cannot load image {}: {}", file_name, image.unwrap_err());
+            panic!();
+        } else {
+            image.unwrap()
+        };
+
+        let (img_width, img_height) = img.dimensions();
+
+        for quad in self.quads.iter_mut() {
+            let ix = (quad.x / SIZE).round() as u32;
+            let iy = (quad.y / SIZE).round() as u32;
+
+            let color = if ix >= img_width || iy >= img_height {
+                *BLACK
+            } else {
+                pixel_to_color(img.get_pixel(ix, iy))
+            };
+
+            if self.down_color {
+                quad.set_down_color(color);
+            } else {
+                quad.set_up_color(color);
+            }
+        }
+
+        self.file_index += 1;
+
+        if self.file_index >= self.file_names.len() {
+            self.file_index = 0;
+        }
+
+    }
+
 }
 
 impl EventHandler for FlowState {
@@ -138,16 +183,20 @@ impl EventHandler for FlowState {
 
         for id in fired {
             if id == "swap_column" {
-                if (self.swapping_column as f32) < (800.0 / SIZE) {
+                if self.swapping_column.is_none() {
+                    self.load_image();
+                    self.swapping_column = Some(0);
+                } else if (self.swapping_column.unwrap() as f32) < (800.0 / SIZE) {
                     {
-                        let sw = self.swapping_column;
+                        let sw = self.swapping_column.unwrap();
                         self.swap_column_quads(sw);
                         // println!("swapping column {}", sw);
                     }
-                    self.swapping_column += 1;
+                    self.swapping_column = Some(self.swapping_column.unwrap() + 1);
                 } else {
                     // println!("restart swap", );
-                    self.swapping_column = 0;
+                    self.swapping_column = None;
+                    self.down_color = !self.down_color;
                 }
             }
         }
@@ -172,11 +221,12 @@ impl EventHandler for FlowState {
         }
 
         // draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
-        if Instant::now().duration_since(self.last_fps_print).as_secs() >= 1 {
-            let fps = get_fps(ctx).round();
-            println!("fps: {}", fps);
-            self.last_fps_print = Instant::now();
-        }
+
+        // if Instant::now().duration_since(self.last_fps_print).as_secs() >= 1 {
+        //     let fps = get_fps(ctx).round();
+        //     println!("fps: {}", fps);
+        //     self.last_fps_print = Instant::now();
+        // }
 
         graphics::present(ctx);
 
@@ -255,17 +305,17 @@ fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
 
 fn load_and_resize_image(file: &str) -> image::ImageResult<image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>>> {
     let maybe_img = image::open(&file)?;
-    println!("file opened", );
+    // println!("file opened", );
 
     let img = maybe_img.to_rgba();
 
     let (width, height) = img.dimensions();
-    println!("img {}x{}", width, height);
+    // println!("img {}x{}", width, height);
 
     let grid_width = 800.0 / SIZE;
     let grid_height = 600.0 / SIZE;
 
-    println!("grid {}x{}", grid_width, grid_height);
+    // println!("grid {}x{}", grid_width, grid_height);
 
     let width_coeff = width as f32 / grid_width;
     let height_coeff = height as f32 / grid_height;
@@ -277,9 +327,8 @@ fn load_and_resize_image(file: &str) -> image::ImageResult<image::ImageBuffer<im
         (height as f32 / coeff) as u32, 
         image::FilterType::Gaussian);
     
-    let (new_width, new_height) = new_img.dimensions();
-
-    println!("new img {}x{}", new_width, new_height);
+    // let (new_width, new_height) = new_img.dimensions();
+    // println!("new img {}x{}", new_width, new_height);
 
     Ok(new_img)
 
