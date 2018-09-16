@@ -8,13 +8,13 @@ use ggez::event::{EventHandler, Keycode, Mod, MouseState, MouseButton};
 use ggez::graphics::{Color};
 use ggez::timer::{get_delta, duration_to_f64};
 use ggez::timer::{get_fps};
-use image::*;
+use image;
 
 use fps::*;
 use sync_timer::*;
 use quad::*;
 
-pub const SIZE : f32 = 10.0;
+const SIZE : f32 = 10.0;
 const MARGIN : f32 = 0.5;
 const FLIP_VELOCITY : f64 = 2.0;
 const FLIP_DELAY : u64 = 100;
@@ -44,7 +44,24 @@ pub struct FlowState {
 
 impl FlowState {
 
-    pub fn new(font: graphics::Font, img: ImageBuffer<Rgba<u8>, std::vec::Vec<u8>>) -> FlowState {
+    pub fn new(font: graphics::Font, args: Vec<String>) -> FlowState {
+        let maybe_file_name = args.get(1);
+
+        if maybe_file_name.is_none() {
+            println!("file name is mandatory", );
+            panic!();
+        }
+
+        let file_name = maybe_file_name.unwrap();
+        let image = load_and_resize_image(file_name);
+
+        let img = if image.is_err() {
+            println!("cannot load image {}: {}", file_name, image.unwrap_err());
+            panic!();
+        } else {
+            image.unwrap()
+        };
+
         let mut quads = Vec::new();
         let mut x = 0.0;
         let mut y = 0.0;
@@ -64,9 +81,7 @@ impl FlowState {
                 let down_color = if ix >= img_width || iy >= img_height {
                     *BLACK
                 } else {
-                    let pixel = img.get_pixel(ix, iy);
-                    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0, 
-                        pixel.data[3] as f32 / 255.0)
+                    pixel_to_color(img.get_pixel(ix, iy))
                 };
                 let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *UP_COLOR, down_color, 0.0, 0.0);
                 quads.push(quad);
@@ -230,5 +245,42 @@ impl EventHandler for FlowState {
             _ => ()
         };
     }
+
+}
+
+fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
+    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0, 
+                        pixel.data[3] as f32 / 255.0)
+}
+
+fn load_and_resize_image(file: &str) -> image::ImageResult<image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>>> {
+    let maybe_img = image::open(&file)?;
+    println!("file opened", );
+
+    let img = maybe_img.to_rgba();
+
+    let (width, height) = img.dimensions();
+    println!("img {}x{}", width, height);
+
+    let grid_width = 800.0 / SIZE;
+    let grid_height = 600.0 / SIZE;
+
+    println!("grid {}x{}", grid_width, grid_height);
+
+    let width_coeff = width as f32 / grid_width;
+    let height_coeff = height as f32 / grid_height;
+
+    let coeff = width_coeff.max(height_coeff);
+
+    let new_img = image::imageops::resize(&img, 
+        (width as f32 / coeff) as u32, 
+        (height as f32 / coeff) as u32, 
+        image::FilterType::Gaussian);
+    
+    let (new_width, new_height) = new_img.dimensions();
+
+    println!("new img {}x{}", new_width, new_height);
+
+    Ok(new_img)
 
 }
