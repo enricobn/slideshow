@@ -8,22 +8,28 @@ use ggez::event::{EventHandler, Keycode, Mod, MouseState, MouseButton};
 use ggez::graphics::{Color};
 use ggez::timer::{get_delta, duration_to_f64};
 use ggez::timer::{get_fps};
+use image::*;
 
 use fps::*;
 use sync_timer::*;
 use quad::*;
 
-const SIZE : f32 = 10.0;
+pub const SIZE : f32 = 10.0;
 const MARGIN : f32 = 0.5;
-const FLIP_VELOCITY : f64 = 3.0;
+const FLIP_VELOCITY : f64 = 2.0;
+const FLIP_DELAY : u64 = 100;
 
 lazy_static! {
     pub static ref UP_COLOR: Color = {
-        Color::new(0.5, 0.0, 0.0, 1.0)
+        Color::new(0.0, 0.0, 0.0, 1.0)
     };
 
     pub static ref DOWN_COLOR: Color = {
         Color::new(0.0, 0.5, 0.0, 1.0)
+    };
+
+    pub static ref BLACK: Color = {
+        Color::new(0.0, 0.0, 0.0, 1.0)
     };
 }
 
@@ -38,23 +44,41 @@ pub struct FlowState {
 
 impl FlowState {
 
-    pub fn new(font: graphics::Font) -> FlowState {
+    pub fn new(font: graphics::Font, img: ImageBuffer<Rgba<u8>, std::vec::Vec<u8>>) -> FlowState {
         let mut quads = Vec::new();
         let mut x = 0.0;
         let mut y = 0.0;
 
+        let grid_width = 800.0 / SIZE;
+        let grid_height = 600.0 / SIZE;
+
+        let (img_width, img_height) = img.dimensions();
+
+        let mut ix : u32 = 0;
+        let mut iy : u32 = 0;
+
         while x < 800.0 {
             y = 0.0;
+            iy = 0;
             while y < 600.0 {
-                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *UP_COLOR, *DOWN_COLOR, 0.0, 0.0);
+                let down_color = if ix >= img_width || iy >= img_height {
+                    *BLACK
+                } else {
+                    let pixel = img.get_pixel(ix, iy);
+                    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0, 
+                        pixel.data[3] as f32 / 255.0)
+                };
+                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *UP_COLOR, down_color, 0.0, 0.0);
                 quads.push(quad);
                 y += SIZE;
+                iy += 1;
             }
             x += SIZE;
+            ix += 1;
         }
 
         let mut timer = SyncTimer::new();
-        timer.add(SyncEvent::new("swap_column", Duration::from_millis(200), true));
+        timer.add(SyncEvent::new("swap_column", Duration::from_millis(FLIP_DELAY), true));
 
         FlowState{quads, font: font, ctrl: false, swapping_column: 0, timer: timer, last_fps_print: Instant::now()}
     }
