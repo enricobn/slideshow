@@ -1,0 +1,6 @@
+TODO
+-----
+- center images when do not fit the grid
+- add more types off effects
+- resolution indipendent
+- full screen

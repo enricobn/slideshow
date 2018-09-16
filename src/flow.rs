@@ -1,5 +1,6 @@
 use std;
 use std::ops::IndexMut;
+use std::ops::Sub;
 use std::time::Duration;
 use std::time::Instant;
 use std::path::Path;
@@ -16,9 +17,10 @@ use sync_timer::*;
 use quad::*;
 
 const SIZE : f32 = 10.0;
-const MARGIN : f32 = 0.5;
+const MARGIN : f32 = 0.0;
 const FLIP_VELOCITY : f64 = 2.0;
 const FLIP_DELAY : u64 = 100;
+const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
 
 lazy_static! {
     pub static ref UP_COLOR: Color = {
@@ -44,6 +46,7 @@ pub struct FlowState {
     file_names: Vec<String>,
     file_index: usize,
     down_color: bool,
+    last_ended_swap: Instant,
 }
 
 impl FlowState {
@@ -101,7 +104,7 @@ impl FlowState {
         timer.add(SyncEvent::new("swap_column", Duration::from_millis(FLIP_DELAY), true));
 
         FlowState{quads, font: font, ctrl: false, swapping_column: None, timer: timer, last_fps_print: Instant::now(),
-            file_names: file_names, file_index: 0, down_color: true}
+            file_names: file_names, file_index: 0, down_color: true, last_ended_swap: Instant::now().sub(Duration::from_millis(LOAD_IMAGE_DELAY))}
     }
 
     fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
@@ -162,6 +165,8 @@ impl FlowState {
             self.file_index = 0;
         }
 
+        self.down_color = !self.down_color;
+
     }
 
 }
@@ -184,8 +189,12 @@ impl EventHandler for FlowState {
         for id in fired {
             if id == "swap_column" {
                 if self.swapping_column.is_none() {
-                    self.load_image();
-                    self.swapping_column = Some(0);
+                    let elapsed = Instant::now().duration_since(self.last_ended_swap);
+
+                    if elapsed > Duration::from_millis(LOAD_IMAGE_DELAY) {
+                        self.load_image();
+                        self.swapping_column = Some(0);
+                    }
                 } else if (self.swapping_column.unwrap() as f32) < (800.0 / SIZE) {
                     {
                         let sw = self.swapping_column.unwrap();
@@ -196,7 +205,7 @@ impl EventHandler for FlowState {
                 } else {
                     // println!("restart swap", );
                     self.swapping_column = None;
-                    self.down_color = !self.down_color;
+                    self.last_ended_swap = Instant::now();
                 }
             }
         }
