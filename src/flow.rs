@@ -15,6 +15,7 @@ use image;
 use fps::*;
 use sync_timer::*;
 use quad::*;
+use grid::*;
 
 const SIZE : f32 = 10.0;
 const MARGIN : f32 = 0.0;
@@ -38,7 +39,7 @@ lazy_static! {
 
 pub struct FlowState {
     font: graphics::Font,
-    quads: Vec<Quad>,
+    grid: Grid,
     ctrl: bool,
     swapping_column: Option<usize>,
     timer: SyncTimer,
@@ -86,7 +87,8 @@ impl FlowState {
             panic!();
         }
 
-        let mut quads = Vec::new();
+        let mut grid = Grid::new(SIZE);
+
         let mut x = 0.0;
         let mut y = 0.0;
 
@@ -94,7 +96,7 @@ impl FlowState {
             y = 0.0;
             while y < 600.0 {
                 let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *BLACK, *BLACK, 0.0, 0.0);
-                quads.push(quad);
+                grid.add(quad);
                 y += SIZE;
             }
             x += SIZE;
@@ -103,31 +105,10 @@ impl FlowState {
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("swap_column", Duration::from_millis(FLIP_DELAY), true));
 
-        FlowState{quads, font: font, ctrl: false, swapping_column: None, timer: timer, last_fps_print: Instant::now(),
+        FlowState{grid: grid, font: font, ctrl: false, swapping_column: None, timer: timer, last_fps_print: Instant::now(),
             file_names: file_names, file_index: 0, down_color: true, last_ended_swap: Instant::now().sub(Duration::from_millis(LOAD_IMAGE_DELAY))}
     }
-
-    fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
-        for quad in self.quads.iter_mut() {
-            if x >= quad.x && x <= quad.x + quad.width {
-                if y >= quad.y && y  <= quad.y + quad.height {
-                    return Some(quad);
-                }
-            }
-        }
-        None
-    }
-
-    fn swap_column_quads(&mut self, column: usize) {
-        let x = column as f32 * SIZE + SIZE / 2.0;
-        for quad in self.quads.iter_mut() {
-            if x >= quad.x && x <= quad.x + quad.width {
-                quad.flip_right(FLIP_VELOCITY);
-                // println!("swapping {}", x);
-            }
-        }
-    }
-
+    
     fn load_image(&mut self) {
         let file_name = self.file_names.get(self.file_index).unwrap();
         println!("loading image {}", file_name);
@@ -142,7 +123,7 @@ impl FlowState {
 
         let (img_width, img_height) = img.dimensions();
 
-        for quad in self.quads.iter_mut() {
+        for quad in self.grid.iter_mut() {
             let ix = (quad.x / SIZE).round() as u32;
             let iy = (quad.y / SIZE).round() as u32;
 
@@ -177,11 +158,8 @@ impl EventHandler for FlowState {
         let delta_duration = get_delta(_ctx);
         let delta = duration_to_f64(delta_duration);
 
-        let mut i: usize = 0;
-        while i < self.quads.len() {
-            let quad = self.quads.index_mut(i);
+        for quad in self.grid.iter_mut() {
             quad.update(delta);
-            i += 1;
         }
 
         let fired = self.timer.fired().clone();
@@ -198,7 +176,7 @@ impl EventHandler for FlowState {
                 } else if (self.swapping_column.unwrap() as f32) < (800.0 / SIZE) {
                     {
                         let sw = self.swapping_column.unwrap();
-                        self.swap_column_quads(sw);
+                        self.grid.swap_column_quads(sw, FLIP_VELOCITY);
                         // println!("swapping column {}", sw);
                     }
                     self.swapping_column = Some(self.swapping_column.unwrap() + 1);
@@ -218,14 +196,14 @@ impl EventHandler for FlowState {
 
         graphics::set_color(ctx, Color::new(0.0, 0.0, 0.0, 255.0))?;
 
-        for quad in &self.quads {
+        for quad in self.grid.iter_mut() {
             if !quad.is_updated() {
                continue; 
             }
             quad.draw_bk(ctx)?;
         }
 
-        for quad in self.quads.iter_mut() {
+        for quad in self.grid.iter_mut() {
             quad.draw(ctx)?;
         }
 
@@ -275,7 +253,7 @@ impl EventHandler for FlowState {
         _yrel: i32,
     ) {
         if self.ctrl {
-            match self.find_quad(x as f32, y as f32) {
+            match self.grid.find_quad(x as f32, y as f32) {
                 Some(quad) => 
                     if quad.faced_up() {
                         quad.flip_right(FLIP_VELOCITY);
@@ -294,7 +272,7 @@ impl EventHandler for FlowState {
         x: i32,
         y: i32,
     ) {
-        match self.find_quad(x as f32, y as f32) {
+        match self.grid.find_quad(x as f32, y as f32) {
             Some(quad) => 
                 if quad.faced_up() {
                     quad.flip_right(FLIP_VELOCITY);

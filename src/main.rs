@@ -10,6 +10,7 @@ mod fps;
 mod sync_timer;
 mod quad;
 mod globals;
+mod grid;
 
 use std::env;
 use std::path;
