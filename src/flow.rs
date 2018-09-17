@@ -100,16 +100,12 @@ impl FlowState {
     fn load_image(&mut self) {
         let file_name = self.file_names.get(self.file_index).unwrap();
         println!("loading image {}", file_name);
-        let image = load_and_resize_image(file_name);
+        let maybe_image = self.grid.load_image(file_name, &self.quad_side);
 
-        let img = if image.is_err() {
-            println!("cannot load image {}: {}", file_name, image.unwrap_err());
+        if maybe_image.is_err() {
+            println!("cannot load image {}: {}", file_name, maybe_image.unwrap_err());
             panic!();
-        } else {
-            image.unwrap()
         };
-
-        self.grid.load_image(img, &self.quad_side);
 
         self.file_index += 1;
 
@@ -228,36 +224,5 @@ impl EventHandler for FlowState {
     ) {
         self.grid.flip_quad_right(x as f32, y as f32, FLIP_VELOCITY);
     }
-
-}
-
-fn load_and_resize_image(file: &str) -> image::ImageResult<image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>>> {
-    let maybe_img = image::open(&file)?;
-    // println!("file opened", );
-
-    let img = maybe_img.to_rgba();
-
-    let (width, height) = img.dimensions();
-    // println!("img {}x{}", width, height);
-
-    let grid_width = WIDTH / QUAD_SIZE;
-    let grid_height = HEIGHT / QUAD_SIZE;
-
-    // println!("grid {}x{}", grid_width, grid_height);
-
-    let width_coeff = width as f32 / grid_width;
-    let height_coeff = height as f32 / grid_height;
-
-    let coeff = width_coeff.max(height_coeff);
-
-    let new_img = image::imageops::resize(&img, 
-        (width as f32 / coeff) as u32, 
-        (height as f32 / coeff) as u32, 
-        image::FilterType::Gaussian);
-    
-    // let (new_width, new_height) = new_img.dimensions();
-    // println!("new img {}x{}", new_width, new_height);
-
-    Ok(new_img)
 
 }

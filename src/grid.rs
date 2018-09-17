@@ -93,7 +93,8 @@ impl Grid {
         self.quads.iter_mut()
     }
 
-    pub fn load_image(&mut self, img: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, side: &QuadSide) {
+    pub fn load_image(&mut self, file: &str, side: &QuadSide) -> Result<(), image::ImageError> {//, img: image::ImageBuffer<image::Rgba<u8>, Vec<u8>>, side: &QuadSide) {
+        let img = self.load_and_resize_image(file)?;
         let (img_width, img_height) = img.dimensions();
 
         for quad in self.quads.iter_mut() {
@@ -112,7 +113,41 @@ impl Grid {
                 quad.set_up_color(color);
             }
         }
+
+        Ok(())
     }
+
+    fn load_and_resize_image(&self, file: &str) -> image::ImageResult<image::ImageBuffer<image::Rgba<u8>, Vec<u8>>> {
+        let maybe_img = image::open(&file)?;
+        // println!("file opened", );
+
+        let img = maybe_img.to_rgba();
+
+        let (width, height) = img.dimensions();
+        // println!("img {}x{}", width, height);
+
+        let grid_width = self.width / self.quad_size;
+        let grid_height = self.height / self.quad_size;
+
+        // println!("grid {}x{}", grid_width, grid_height);
+
+        let width_coeff = width as f32 / grid_width;
+        let height_coeff = height as f32 / grid_height;
+
+        let coeff = width_coeff.max(height_coeff);
+
+        let new_img = image::imageops::resize(&img, 
+            (width as f32 / coeff) as u32, 
+            (height as f32 / coeff) as u32, 
+            image::FilterType::Gaussian);
+        
+        // let (new_width, new_height) = new_img.dimensions();
+        // println!("new img {}x{}", new_width, new_height);
+
+        Ok(new_img)
+
+    }
+
 
     pub fn flip_quad_right(&mut self, x: f32, y: f32, speed: f64) {
         match self.find_quad(x, y) {
