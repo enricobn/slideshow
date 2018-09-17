@@ -145,9 +145,7 @@ impl EventHandler for FlowState {
         let delta_duration = get_delta(_ctx);
         let delta = duration_to_f64(delta_duration);
 
-        for quad in self.grid.iter_mut() {
-            quad.update(delta);
-        }
+        self.grid.update(delta);
 
         let fired = self.timer.fired().clone();
 
@@ -181,18 +179,7 @@ impl EventHandler for FlowState {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         // graphics::clear(ctx);
 
-        graphics::set_color(ctx, Color::new(0.0, 0.0, 0.0, 255.0))?;
-
-        for quad in self.grid.iter_mut() {
-            if !quad.is_updated() {
-               continue; 
-            }
-            quad.draw_bk(ctx)?;
-        }
-
-        for quad in self.grid.iter_mut() {
-            quad.draw(ctx)?;
-        }
+        self.grid.draw(ctx)?;
 
         // draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
 

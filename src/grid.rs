@@ -1,10 +1,10 @@
 use std::slice::IterMut;
 
 use graphics::*;
+use ggez::*;
 use image;
 
 use quad::*;
-
 
 #[derive(PartialEq)]
 pub enum QuadSide {
@@ -22,6 +22,29 @@ impl Grid {
 
     pub fn new(quad_size: f32, background_color: Color) -> Grid {
         Grid {quad_size: quad_size, quads: Vec::new(), background_color: background_color}
+    }
+
+    pub fn update(&mut self, delta: f64) {
+        for quad in self.iter_mut() {
+            quad.update(delta);
+        }
+    }
+
+    pub fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        graphics::set_color(ctx, self.background_color)?;
+
+        for quad in self.quads.iter_mut() {
+            if !quad.is_updated() {
+               continue; 
+            }
+            quad.draw_bk(ctx)?;
+        }
+
+        for quad in self.quads.iter_mut() {
+            quad.draw(ctx)?;
+        }
+
+        Ok(())
     }
 
     pub fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
