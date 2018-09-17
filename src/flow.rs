@@ -1,5 +1,4 @@
 use std;
-use std::ops::IndexMut;
 use std::ops::Sub;
 use std::time::Duration;
 use std::time::Instant;
@@ -46,7 +45,7 @@ pub struct FlowState {
     last_fps_print: Instant,
     file_names: Vec<String>,
     file_index: usize,
-    down_color: bool,
+    quad_side: QuadSide,
     last_ended_swap: Instant,
 }
 
@@ -87,7 +86,7 @@ impl FlowState {
             panic!();
         }
 
-        let mut grid = Grid::new(SIZE);
+        let mut grid = Grid::new(SIZE, *BLACK);
 
         let mut x = 0.0;
         let mut y = 0.0;
@@ -106,7 +105,8 @@ impl FlowState {
         timer.add(SyncEvent::new("swap_column", Duration::from_millis(FLIP_DELAY), true));
 
         FlowState{grid: grid, font: font, ctrl: false, swapping_column: None, timer: timer, last_fps_print: Instant::now(),
-            file_names: file_names, file_index: 0, down_color: true, last_ended_swap: Instant::now().sub(Duration::from_millis(LOAD_IMAGE_DELAY))}
+            file_names: file_names, file_index: 0, quad_side: QuadSide::Down, 
+            last_ended_swap: Instant::now().sub(Duration::from_millis(LOAD_IMAGE_DELAY))}
     }
     
     fn load_image(&mut self) {
@@ -121,24 +121,7 @@ impl FlowState {
             image.unwrap()
         };
 
-        let (img_width, img_height) = img.dimensions();
-
-        for quad in self.grid.iter_mut() {
-            let ix = (quad.x / SIZE).round() as u32;
-            let iy = (quad.y / SIZE).round() as u32;
-
-            let color = if ix >= img_width || iy >= img_height {
-                *BLACK
-            } else {
-                pixel_to_color(img.get_pixel(ix, iy))
-            };
-
-            if self.down_color {
-                quad.set_down_color(color);
-            } else {
-                quad.set_up_color(color);
-            }
-        }
+        self.grid.load_image(img, &self.quad_side);
 
         self.file_index += 1;
 
@@ -146,7 +129,11 @@ impl FlowState {
             self.file_index = 0;
         }
 
-        self.down_color = !self.down_color;
+        if self.quad_side == QuadSide::Up {
+            self.quad_side = QuadSide::Down;
+        } else {
+            self.quad_side = QuadSide::Up;
+        }
 
     }
 
@@ -283,11 +270,6 @@ impl EventHandler for FlowState {
         };
     }
 
-}
-
-fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
-    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0, 
-                        pixel.data[3] as f32 / 255.0)
 }
 
 fn load_and_resize_image(file: &str) -> image::ImageResult<image::ImageBuffer<image::Rgba<u8>, std::vec::Vec<u8>>> {
