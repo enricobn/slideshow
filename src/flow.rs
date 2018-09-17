@@ -13,14 +13,15 @@ use image;
 
 use fps::*;
 use sync_timer::*;
-use quad::*;
 use grid::*;
 
-const SIZE : f32 = 10.0;
-const MARGIN : f32 = 0.0;
+const QUAD_SIZE : f32 = 10.0;
+const QUAD_MARGIN : f32 = 0.0;
 const FLIP_VELOCITY : f64 = 2.0;
 const FLIP_DELAY : u64 = 100;
 const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
+const WIDTH: f32 = 800.0;
+const HEIGHT: f32 = 600.0;
 
 lazy_static! {
     pub static ref UP_COLOR: Color = {
@@ -86,20 +87,7 @@ impl FlowState {
             panic!();
         }
 
-        let mut grid = Grid::new(SIZE, *BLACK);
-
-        let mut x = 0.0;
-        let mut y = 0.0;
-
-        while x < 800.0 {
-            y = 0.0;
-            while y < 600.0 {
-                let quad = Quad::new(x + MARGIN, y + MARGIN, SIZE - 2.0 * MARGIN, SIZE - 2.0 * MARGIN, *BLACK, *BLACK, 0.0, 0.0);
-                grid.add(quad);
-                y += SIZE;
-            }
-            x += SIZE;
-        }
+        let grid = Grid::new(WIDTH, HEIGHT, QUAD_SIZE, QUAD_MARGIN, *BLACK);
 
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("swap_column", Duration::from_millis(FLIP_DELAY), true));
@@ -158,7 +146,7 @@ impl EventHandler for FlowState {
                         self.load_image();
                         self.swapping_column = Some(0);
                     }
-                } else if (self.swapping_column.unwrap() as f32) < (800.0 / SIZE) {
+                } else if (self.swapping_column.unwrap() as f32) < (WIDTH / QUAD_SIZE) {
                     {
                         let sw = self.swapping_column.unwrap();
                         self.grid.swap_column_quads(sw, FLIP_VELOCITY);
@@ -227,15 +215,7 @@ impl EventHandler for FlowState {
         _yrel: i32,
     ) {
         if self.ctrl {
-            match self.grid.find_quad(x as f32, y as f32) {
-                Some(quad) => 
-                    if quad.faced_up() {
-                        quad.flip_right(FLIP_VELOCITY);
-                    } else {
-                        quad.flip_left(FLIP_VELOCITY);
-                    },
-                _ => ()
-            };
+            self.grid.flip_quad_right(x as f32, y as f32, FLIP_VELOCITY);
         }
     }
 
@@ -246,15 +226,7 @@ impl EventHandler for FlowState {
         x: i32,
         y: i32,
     ) {
-        match self.grid.find_quad(x as f32, y as f32) {
-            Some(quad) => 
-                if quad.faced_up() {
-                    quad.flip_right(FLIP_VELOCITY);
-                } else {
-                    quad.flip_left(FLIP_VELOCITY);
-                },
-            _ => ()
-        };
+        self.grid.flip_quad_right(x as f32, y as f32, FLIP_VELOCITY);
     }
 
 }
@@ -268,8 +240,8 @@ fn load_and_resize_image(file: &str) -> image::ImageResult<image::ImageBuffer<im
     let (width, height) = img.dimensions();
     // println!("img {}x{}", width, height);
 
-    let grid_width = 800.0 / SIZE;
-    let grid_height = 600.0 / SIZE;
+    let grid_width = WIDTH / QUAD_SIZE;
+    let grid_height = HEIGHT / QUAD_SIZE;
 
     // println!("grid {}x{}", grid_width, grid_height);
 

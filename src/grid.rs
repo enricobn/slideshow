@@ -13,6 +13,8 @@ pub enum QuadSide {
 }
 
 pub struct Grid {
+    width: f32, 
+    height: f32,
     background_color: Color,
     quad_size: f32,
     quads: Vec<Quad>,
@@ -20,8 +22,23 @@ pub struct Grid {
 
 impl Grid {
 
-    pub fn new(quad_size: f32, background_color: Color) -> Grid {
-        Grid {quad_size: quad_size, quads: Vec::new(), background_color: background_color}
+    pub fn new(width: f32, height: f32, quad_size: f32, quad_margin: f32, background_color: Color) -> Grid {
+        let mut grid = Grid {width: width, height: height, quad_size: quad_size, quads: Vec::new(), background_color: background_color};
+
+        let mut x = 0.0;
+        let mut y = 0.0;
+
+        while x < width {
+            y = 0.0;
+            while y < height {
+                let quad = Quad::new(x + quad_margin, y + quad_margin, quad_size - 2.0 * quad_margin, quad_size - 2.0 * quad_margin, background_color, background_color, 0.0, 0.0);
+                grid.add(quad);
+                y += quad_size;
+            }
+            x += quad_size;
+        }
+
+        grid
     }
 
     pub fn update(&mut self, delta: f64) {
@@ -95,6 +112,13 @@ impl Grid {
                 quad.set_up_color(color);
             }
         }
+    }
+
+    pub fn flip_quad_right(&mut self, x: f32, y: f32, speed: f64) {
+        match self.find_quad(x, y) {
+            Some(quad) => quad.flip_right(speed),
+            _ => ()
+        };
     }
 
 }
