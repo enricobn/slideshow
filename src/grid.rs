@@ -64,7 +64,7 @@ impl Grid {
         Ok(())
     }
 
-    pub fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
+    fn find_quad(&mut self, x: f32, y: f32) -> Option<&mut Quad> {
         for quad in self.quads.iter_mut() {
             if x >= quad.x && x <= quad.x + quad.width {
                 if y >= quad.y && y  <= quad.y + quad.height {
@@ -147,7 +147,6 @@ impl Grid {
         Ok(new_img)
 
     }
-
 
     pub fn flip_quad_right(&mut self, x: f32, y: f32, speed: f64) {
         match self.find_quad(x, y) {

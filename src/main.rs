@@ -4,7 +4,6 @@ extern crate image;
 #[macro_use]
 extern crate lazy_static;
 
-mod fight;
 mod flow;
 mod fps;
 mod sync_timer;
@@ -14,13 +13,10 @@ mod grid;
 
 use std::env;
 use std::path;
-use fight::*;
 use flow::*;
 
 use ggez::*;
 use ggez::conf::FullscreenType;
-
-use image::*;
 
 fn main() -> GameResult<()> {
     let mut c = conf::Conf::new();

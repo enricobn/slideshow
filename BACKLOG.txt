@@ -4,3 +4,5 @@ TODO
 - add more types off effects
 - resolution indipendent
 - full screen
+- make Grid a trait and the actual grid ColorGrid
+- I don't like QuadSide name and use, it's not clear what it means
