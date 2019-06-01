@@ -34,15 +34,17 @@ impl Transition for Pixels {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
         let mut rng = rand::thread_rng();
 
-        for i in 0..2_000 {
+        let mut changed = false;
+
+        for _i in 0..2_000 {
             if self.pixels.is_empty() {
                 break;
-                return Ok(false);
             }
 
-            let len = self.pixels.len();
-            let index = rng.gen_range(0, len as u32);
-            let removed = &self.pixels.remove(index as usize);
+            changed = true;
+
+            let index = rng.gen_range(0usize, self.pixels.len());
+            let removed = &self.pixels.remove(index);
 
             match &self.new_image {
                 Some(i) => {
@@ -51,13 +53,13 @@ impl Transition for Pixels {
                     graphics::set_color(ctx, c)?;
                     
                     graphics::rectangle(ctx, DrawMode::Fill, 
-                        Rect::new(removed.x as f32, removed.y as f32, 1.0, 1.0));
+                        Rect::new(removed.x as f32, removed.y as f32, 1.0, 1.0))?;
                 }
                 None => {}
             }
         }
 
-        Ok(true)
+        Ok(changed)
 
     }
 
