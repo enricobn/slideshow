@@ -1,7 +1,5 @@
 use std;
-use std::ops::Sub;
 use std::time::Duration;
-use std::time::Instant;
 use std::path::Path;
 
 use ggez::*;
@@ -9,18 +7,20 @@ use ggez::event::{EventHandler};
 use ggez::graphics::{Image};
 use ggez::timer::{get_delta, duration_to_f64};
 use transition::*;
+use pixels::*;
 
 use image;
 
 use sync_timer::*;
 
-const LOAD_IMAGE_DELAY : u64 = 1_000; // millis
+const LOAD_IMAGE_DELAY : u64 = 20_000; // millis
 
 pub struct SlideShow {
     timer: SyncTimer,
     file_names: Vec<String>,
     file_index: usize,
-    transition: Box<Transition>
+    transition: Box<Transition>,
+    first: bool
 }
 
 impl SlideShow {
@@ -63,9 +63,30 @@ impl SlideShow {
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("next_image", Duration::from_millis(LOAD_IMAGE_DELAY), true));
 
-        SlideShow{timer: timer, file_names: file_names, file_index: 0,
-            transition: Box::new(SimpleTransition::new())}
+        let mut s = SlideShow{timer: timer, file_names: file_names, file_index: 0,
+            transition: Box::new(Pixels::new()), first: true};
+
+        &s.update_image();
+        return s;
     }
+
+    fn update_image(&mut self) -> GameResult<()> {
+        let file_name = self.file_names.get(self.file_index).unwrap();
+        println!("loading image {}", file_name);
+
+        self.file_index += 1;
+
+        if self.file_index >= self.file_names.len() {
+            self.file_index = 0;
+        }
+
+        let img = image::open(&file_name).unwrap();
+        let img_rgba = img.to_rgba();
+
+        self.transition.update(img_rgba);
+        Ok(())
+    }
+
 
 }
 
@@ -79,20 +100,7 @@ impl EventHandler for SlideShow {
 
         for id in fired {
             if id == "next_image" {
-                let file_name = self.file_names.get(self.file_index).unwrap();
-                println!("loading image {}", file_name);
-
-                self.file_index += 1;
-
-                if self.file_index >= self.file_names.len() {
-                    self.file_index = 0;
-                }
-
-                let img = image::open(&file_name).unwrap();
-                let img_rgba = img.to_rgba();
-
-                let image = Image::from_rgba8(ctx, img_rgba.width() as u16, img_rgba.height() as u16, &img_rgba.into_raw());
-                self.transition.update(image.unwrap());
+                self.update_image()?;
             }
         }
 
@@ -102,7 +110,7 @@ impl EventHandler for SlideShow {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         // graphics::clear(ctx);
 
-        self.transition.draw(ctx)?;
+        let redraw = self.transition.draw(ctx)?;
 
         // draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
 
@@ -112,7 +120,9 @@ impl EventHandler for SlideShow {
         //     self.last_fps_print = Instant::now();
         // }
 
-        graphics::present(ctx);
+        if redraw {
+            graphics::present(ctx);
+        }
 
         Ok(())
     }

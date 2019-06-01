@@ -1,0 +1,80 @@
+use ggez::*;
+use transition::*;
+use ggez::graphics::{Point2,Color,Rect,DrawMode};
+use image::RgbaImage;
+use rand::Rng;
+
+pub struct Pixels {
+    pixels: Vec<Pixel>,
+    new_image: Option<RgbaImage>,
+}
+
+impl Pixels {
+
+    pub fn new() -> Pixels {
+        Pixels{pixels: Vec::new(), new_image: None}
+    }
+
+}
+
+struct Pixel {
+    x: u16,
+    y: u16
+}
+
+impl Pixel {
+
+    pub fn new(x: u16, y: u16) -> Pixel {
+        Pixel{x: x, y: y}
+    }
+}
+
+impl Transition for Pixels {
+
+    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+        let mut rng = rand::thread_rng();
+
+        for i in 0..2_000 {
+            if self.pixels.is_empty() {
+                break;
+                return Ok(false);
+            }
+
+            let len = self.pixels.len();
+            let index = rng.gen_range(0, len as u32);
+            let removed = &self.pixels.remove(index as usize);
+
+            match &self.new_image {
+                Some(i) => {
+                    let p = i.get_pixel(removed.x as u32, removed.y as u32);
+                    let c = pixel_to_color(p);
+                    graphics::set_color(ctx, c)?;
+                    
+                    graphics::rectangle(ctx, DrawMode::Fill, 
+                        Rect::new(removed.x as f32, removed.y as f32, 1.0, 1.0));
+                }
+                None => {}
+            }
+        }
+
+        Ok(true)
+
+    }
+
+    fn update(&mut self, image: RgbaImage) {
+        &self.pixels.clear();
+        for x in 0..image.width() {
+            for y in 0..image.height() {
+                &self.pixels.push(Pixel::new(x as u16, y as u16));
+            }
+        }
+        
+        self.new_image = Some(image);
+    }
+
+}
+
+fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
+    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0, 
+                        pixel.data[3] as f32 / 255.0)
+}
