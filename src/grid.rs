@@ -26,10 +26,9 @@ impl Grid {
         let mut grid = Grid {width: width, height: height, quad_size: quad_size, quads: Vec::new(), background_color: background_color};
 
         let mut x = 0.0;
-        let mut y = 0.0;
 
         while x < width {
-            y = 0.0;
+            let mut y = 0.0;
             while y < height {
                 let quad = Quad::new(x + quad_margin, y + quad_margin, quad_size - 2.0 * quad_margin, quad_size - 2.0 * quad_margin, background_color, background_color, 0.0, 0.0);
                 grid.add(quad);

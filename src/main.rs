@@ -10,10 +10,13 @@ mod sync_timer;
 mod quad;
 mod globals;
 mod grid;
+mod transition;
+mod slideshow;
 
 use std::env;
 use std::path;
 use flow::*;
+use slideshow::*;
 
 use ggez::*;
 use ggez::conf::FullscreenType;
@@ -45,7 +48,7 @@ fn main() -> GameResult<()> {
      
     let args: Vec<String> = env::args().collect();
 
-    let mut state = FlowState::new(font, args);
+    let mut state = SlideShow::new(args); //FlowState::new(font, args);
 
     event::run(ctx, &mut state)
 }
