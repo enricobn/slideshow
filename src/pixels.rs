@@ -63,7 +63,7 @@ impl Transition for Pixels {
 
     }
 
-    fn update(&mut self, image: RgbaImage) {
+    fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
         &self.pixels.clear();
         for x in 0..image.width() {
             for y in 0..image.height() {

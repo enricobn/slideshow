@@ -59,16 +59,14 @@ impl SlideShow {
             panic!();
         }
 
-        let timer = SyncTimer::new();
+        let mut timer = SyncTimer::new();
+        timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
 
-        let mut s = SlideShow{timer: timer, file_names: file_names, file_index: 0,
-            transition: Box::new(Quads::new()), waiting: true};
-
-        &s.update_image();
-        return s;
+        SlideShow{timer: timer, file_names: file_names, file_index: 0,
+            transition: Box::new(Quads::new()), waiting: true}
     }
 
-    fn update_image(&mut self) -> GameResult<()> {
+    fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {
         let file_name = self.file_names.get(self.file_index).unwrap();
         println!("loading image {}", file_name);
 
@@ -81,7 +79,7 @@ impl SlideShow {
         let img = image::open(&file_name).unwrap();
         let img_rgba = img.to_rgba();
 
-        self.transition.update(img_rgba);
+        self.transition.update(ctx, img_rgba);
         self.waiting = false;
 
         Ok(())
@@ -96,7 +94,7 @@ impl EventHandler for SlideShow {
 
         for id in fired {
             if id == "next_image" {
-                self.update_image()?;
+                self.update_image(ctx)?;
             }
         }
 

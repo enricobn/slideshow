@@ -10,13 +10,13 @@ pub trait Transition {
     /// Should return false if the transition is ended.
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool>;
 
-    fn update(&mut self, image: RgbaImage);
+    fn update(&mut self, ctx: &mut Context, image: RgbaImage);
 
 }
 
 pub struct SimpleTransition {
-    back_image: Option<RgbaImage>,
-    new_image: Option<RgbaImage>,
+    back_image: Option<Image>,
+    new_image: Option<Image>,
     ended: bool,
 }
 
@@ -35,9 +35,7 @@ impl Transition for SimpleTransition {
             match &self.new_image {
                 Some(i) => {
                     graphics::clear(ctx);
-                    // TODO
-                    //let image = Image::from_rgba8(ctx, i.width() as u16, i.height() as u16, &i.into_raw()).unwrap();
-                    //image.draw(ctx, Point2::new(0.0, 0.0), 0.0)?;
+                    i.draw(ctx, Point2::new(0.0, 0.0), 0.0)?;
                     Ok(true)
                 },
                 None => Ok(false)
@@ -47,9 +45,10 @@ impl Transition for SimpleTransition {
         }
     }
 
-    fn update(&mut self, image: RgbaImage) {
+    fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
         //self.back_image = self.new_image;
-        self.new_image = Some(image);
+        let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
+        self.new_image = Some(i);
         self.ended = false;
     }
 

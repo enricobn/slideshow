@@ -4,7 +4,7 @@ use ggez::graphics::{Color,Rect,DrawMode};
 use image::RgbaImage;
 use rand::Rng;
 
-const QUAD_SIZE : u32 = 31;
+const QUAD_SIZE : u32 = 30;
 
 pub struct Quads {
     quads: Vec<Quad>,
@@ -67,7 +67,7 @@ impl Transition for Quads {
 
     }
 
-    fn update(&mut self, image: RgbaImage) {
+    fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
         &self.quads.clear();
 
         let h_quads = image.width() / QUAD_SIZE; 
