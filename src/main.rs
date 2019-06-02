@@ -13,6 +13,7 @@ mod grid;
 mod transition;
 mod slideshow;
 mod pixels;
+mod quads;
 
 use std::env;
 use std::path;

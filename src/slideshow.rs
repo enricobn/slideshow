@@ -6,6 +6,7 @@ use ggez::*;
 use ggez::event::{EventHandler};
 use transition::*;
 use pixels::*;
+use quads::*;
 
 use image;
 
@@ -61,7 +62,7 @@ impl SlideShow {
         let timer = SyncTimer::new();
 
         let mut s = SlideShow{timer: timer, file_names: file_names, file_index: 0,
-            transition: Box::new(Pixels::new()), waiting: true};
+            transition: Box::new(Quads::new()), waiting: true};
 
         &s.update_image();
         return s;
