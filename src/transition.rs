@@ -1,8 +1,5 @@
 use ggez::*;
-use ggez::event::{EventHandler, Keycode, Mod, MouseState, MouseButton};
-use ggez::graphics::{Color,Point2,Image,Drawable};
-use ggez::timer::{get_delta, duration_to_f64};
-use ggez::timer::{get_fps};
+use ggez::graphics::{Point2,Image,Drawable};
 use image::RgbaImage;
 
 pub trait Transition {
