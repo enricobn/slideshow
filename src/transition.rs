@@ -4,8 +4,7 @@ use image::RgbaImage;
 
 pub trait Transition {
 
-    /// Should return true if the transition is still running. 
-    /// It should return true even in the final step of the transition since if false then graphics is not updated.
+    /// Should return true if the transition is still running.
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool>;
 
     fn update(&mut self, ctx: &mut Context, image: RgbaImage);
@@ -33,13 +32,11 @@ impl Transition for SimpleTransition {
                 Some(i) => {
                     graphics::clear(ctx);
                     i.draw(ctx, Point2::new(0.0, 0.0), 0.0)?;
-                    Ok(true)
                 },
-                None => Ok(false)
+                None => {}
             }
-        } else {
-            Ok(false)
         }
+        Ok(false)
     }
 
     fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
