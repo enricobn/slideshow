@@ -1,6 +1,6 @@
 use ggez::*;
 use transition::*;
-use ggez::graphics::{Color,Rect,DrawMode};
+use ggez::graphics::{Rect,DrawParam,Image,Point2,Drawable};
 use image::RgbaImage;
 use rand::Rng;
 
@@ -8,7 +8,7 @@ const QUAD_SIZE : u32 = 30;
 
 pub struct Quads {
     quads: Vec<Quad>,
-    image: Option<RgbaImage>
+    image: Option<Image>
 }
 
 impl Quads {
@@ -47,18 +47,12 @@ impl Transition for Quads {
             Some(i) => {
                 let quad_x = removed.x as u32 * QUAD_SIZE;
                 let quad_y = removed.y as u32 * QUAD_SIZE;
-                for x in 0..QUAD_SIZE {
-                    for y in 0..QUAD_SIZE {
-                        if quad_x + x < i.width() && quad_y + y < i.height() {
-                            let p = i.get_pixel(quad_x + x as u32, quad_y + y as u32);
-                            let c = pixel_to_color(p);
-                            graphics::set_color(ctx, c)?;
-                            
-                            graphics::rectangle(ctx, DrawMode::Fill, 
-                                Rect::new((quad_x + x) as f32, (quad_y + y) as f32, 1.0, 1.0))?;
-                        }
-                    }
-                }
+
+                let mut draw_param = DrawParam::default();
+                draw_param.src = Rect::new(quad_x as f32 / i.width() as f32, quad_y as f32 / i.height() as f32, QUAD_SIZE as f32 / i.width() as f32, QUAD_SIZE as f32 / i.height() as f32);
+                draw_param.dest = Point2::new(quad_x as f32, quad_y as f32);
+
+                i.draw_ex(ctx, draw_param)?;
             }
             None => {}
         }
@@ -67,7 +61,7 @@ impl Transition for Quads {
 
     }
 
-    fn update(&mut self, _ctx: &mut Context, image: RgbaImage) {
+    fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
         &self.quads.clear();
 
         let h_quads = image.width() / QUAD_SIZE; 
@@ -79,12 +73,9 @@ impl Transition for Quads {
             }
         }
         
-        self.image = Some(image);
+        let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
+
+        self.image = Some(i);
     }
 
-}
-
-fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
-    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0, 
-                        pixel.data[3] as f32 / 255.0)
 }
