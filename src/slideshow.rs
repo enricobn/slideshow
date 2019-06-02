@@ -102,11 +102,11 @@ impl EventHandler for SlideShow {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let redraw = self.transition.draw(ctx)?;
+        let running = self.transition.draw(ctx)?;
 
-        if redraw {
-            graphics::present(ctx);
-        } else if !self.waiting {
+        graphics::present(ctx);
+
+        if !running && !self.waiting {
             self.timer.add(SyncEvent::new("next_image", Duration::from_millis(LOAD_IMAGE_DELAY), false));
             self.waiting = true;
         }
