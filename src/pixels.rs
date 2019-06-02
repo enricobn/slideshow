@@ -1,18 +1,18 @@
 use ggez::*;
 use transition::*;
-use ggez::graphics::{Point2,Color,Rect,DrawMode};
+use ggez::graphics::{Color,Rect,DrawMode};
 use image::RgbaImage;
 use rand::Rng;
 
 pub struct Pixels {
     pixels: Vec<Pixel>,
-    new_image: Option<RgbaImage>,
+    image: Option<RgbaImage>,
 }
 
 impl Pixels {
 
     pub fn new() -> Pixels {
-        Pixels{pixels: Vec::new(), new_image: None}
+        Pixels{pixels: Vec::new(), image: None}
     }
 
 }
@@ -46,7 +46,7 @@ impl Transition for Pixels {
             let index = rng.gen_range(0usize, self.pixels.len());
             let removed = &self.pixels.remove(index);
 
-            match &self.new_image {
+            match &self.image {
                 Some(i) => {
                     let p = i.get_pixel(removed.x as u32, removed.y as u32);
                     let c = pixel_to_color(p);
@@ -71,7 +71,7 @@ impl Transition for Pixels {
             }
         }
         
-        self.new_image = Some(image);
+        self.image = Some(image);
     }
 
 }

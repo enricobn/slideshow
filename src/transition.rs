@@ -7,6 +7,7 @@ use image::RgbaImage;
 
 pub trait Transition {
 
+    /// Should return false if the transition is ended.
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool>;
 
     fn update(&mut self, image: RgbaImage);

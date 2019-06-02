@@ -4,8 +4,6 @@ use std::path::Path;
 
 use ggez::*;
 use ggez::event::{EventHandler};
-use ggez::graphics::{Image};
-use ggez::timer::{get_delta, duration_to_f64};
 use transition::*;
 use pixels::*;
 
@@ -13,14 +11,14 @@ use image;
 
 use sync_timer::*;
 
-const LOAD_IMAGE_DELAY : u64 = 20_000; // millis
+const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
 
 pub struct SlideShow {
     timer: SyncTimer,
     file_names: Vec<String>,
     file_index: usize,
     transition: Box<Transition>,
-    first: bool
+    waiting: bool
 }
 
 impl SlideShow {
@@ -60,11 +58,10 @@ impl SlideShow {
             panic!();
         }
 
-        let mut timer = SyncTimer::new();
-        timer.add(SyncEvent::new("next_image", Duration::from_millis(LOAD_IMAGE_DELAY), true));
+        let timer = SyncTimer::new();
 
         let mut s = SlideShow{timer: timer, file_names: file_names, file_index: 0,
-            transition: Box::new(Pixels::new()), first: true};
+            transition: Box::new(Pixels::new()), waiting: true};
 
         &s.update_image();
         return s;
@@ -84,18 +81,16 @@ impl SlideShow {
         let img_rgba = img.to_rgba();
 
         self.transition.update(img_rgba);
+        self.waiting = false;
+
         Ok(())
     }
-
 
 }
 
 impl EventHandler for SlideShow {
 
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let delta_duration = get_delta(ctx);
-        let delta = duration_to_f64(delta_duration);
-
         let fired = self.timer.fired().clone();
 
         for id in fired {
@@ -108,20 +103,13 @@ impl EventHandler for SlideShow {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        // graphics::clear(ctx);
-
         let redraw = self.transition.draw(ctx)?;
-
-        // draw_fps(ctx, &self.font, graphics::Point2::new(10.0, 10.0), graphics::Color::from((255, 255, 255, 255)))?;
-
-        // if Instant::now().duration_since(self.last_fps_print).as_secs() >= 1 {
-        //     let fps = get_fps(ctx).round();
-        //     println!("fps: {}", fps);
-        //     self.last_fps_print = Instant::now();
-        // }
 
         if redraw {
             graphics::present(ctx);
+        } else if !self.waiting {
+            self.timer.add(SyncEvent::new("next_image", Duration::from_millis(LOAD_IMAGE_DELAY), false));
+            self.waiting = true;
         }
 
         Ok(())
