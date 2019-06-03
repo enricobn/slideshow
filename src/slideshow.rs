@@ -7,6 +7,7 @@ use ggez::event::{EventHandler};
 use transition::*;
 use pixels::*;
 use quads::*;
+use slides::*;
 
 use image;
 
@@ -63,7 +64,7 @@ impl SlideShow {
         timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
 
         SlideShow{timer: timer, file_names: file_names, file_index: 0,
-            transition: Box::new(Quads::new()), waiting: true}
+            transition: Box::new(Slides::new()), waiting: true}
     }
 
     fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {

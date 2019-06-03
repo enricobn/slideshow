@@ -14,6 +14,7 @@ mod transition;
 mod slideshow;
 mod pixels;
 mod quads;
+mod slides;
 
 use std::env;
 use std::path;
