@@ -33,6 +33,22 @@ impl SlideShow {
             panic!();
         }
 
+        let transition : Box<Transition> = match args.get(2) {
+            Some(s) => {
+                match s.as_str() {
+                    "simple" => Box::new(SimpleTransition::new()),
+                    "pixels" => Box::new(Pixels::new()),
+                    "quads" => Box::new(Quads::new()),
+                    "slides" => Box::new(Slides::new()),
+                    _ => {
+                        println!("Unknown transition {}", s);
+                        panic!();
+                    }
+                }
+            },
+            None => Box::new(Slides::new())
+        };
+
         let directory = Path::new(folder_name.unwrap());
 
         let paths = directory.read_dir().unwrap();
@@ -64,7 +80,7 @@ impl SlideShow {
         timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
 
         SlideShow{timer: timer, file_names: file_names, file_index: 0,
-            transition: Box::new(Slides::new()), waiting: true}
+            transition: transition, waiting: true}
     }
 
     fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {
