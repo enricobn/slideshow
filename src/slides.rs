@@ -3,9 +3,10 @@ use transition::*;
 use ggez::graphics::{Rect,DrawParam,Image,Point2,Drawable};
 use image::RgbaImage;
 use rand::Rng;
+use velocity::*;
 
 const SLIDES : u32 = 8;
-const VELOCITY : i32 = 8;
+const VELOCITY : f32 = 15.0;
 
 pub struct Slides {
     slides: Vec<Slide>,
@@ -20,53 +21,77 @@ impl Slides {
 
 }
 
+enum Direction {
+    Right,
+    Left
+}
+
 struct Slide {
     i_width: u32,
     i_height: u32,
-    x: u32,
-    y: u32,
-    width: u32,
-    height: u32,
-    vx: i32,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    vx: f32,
     vy: i32,
-    ended: bool
+    ax: f32,
+    direction: Direction,
+    ended: bool,
+    velocity: Box<Velocity>
 }
 
 impl Slide {
 
-    fn from_left(i_width: u32, i_height: u32, y: u32) -> Slide {
-        Slide{i_width: i_width, i_height: i_height, x: i_width, y: y, width: 0, height: i_height / SLIDES, vx: VELOCITY, vy: 0, ended:false}
+    fn left(i_width: u32, i_height: u32, y: u32) -> Slide {
+        Slide{i_width: i_width, i_height: i_height, x: i_width as f32, y: y as f32, width: 0.0, 
+            height: i_height as f32 / SLIDES as f32, vx: VELOCITY, vy: 0, ax: 0.0, direction: Direction::Left, 
+            ended:false, velocity: Slide::velocity()}
     }
 
-    fn from_right(i_width: u32, i_height: u32, y: u32) -> Slide {
-        Slide{i_width: i_width, i_height: i_height, x: 0, y: y, width: 0, height: i_height / SLIDES, vx: -VELOCITY, vy: 0, ended:false}
+    fn right(i_width: u32, i_height: u32, y: u32) -> Slide {
+        Slide{i_width: i_width, i_height: i_height, x: 0.0, y: y as f32, width: 0.0, 
+            height: i_height as f32 / SLIDES as f32, vx: VELOCITY, vy: 0, ax: 0.0, direction: Direction::Right, 
+            ended:false, velocity: Slide::velocity()}
+    }
+
+    fn velocity() -> Box<Velocity> {
+        Box::new(StepsVelocity::new(vec![1.0, 1.5, 2.0, 1.5, 1.0, 0.1]))
     }
 
     fn update(&mut self) {
-        if self.vx > 0 {
-            self.width = (self.width as i32 + self.vx) as u32;
-            self.x = (self.x as i32 - self.vx) as u32;
-        } else {
-            self.width = (self.width as i32 - self.vx) as u32;
+        self.width += self.vx;
+
+        match self.direction {
+            Direction::Left => self.x -= self.vx,
+            _ => {}
         }
 
-        if self.width >= self.i_width {
-            self.ended = true;
-            self.width = self.i_width;
-            self.x = 0;
+        if self.vx < 0.0 {
+            self.vx = 0.1;
         }
+
+        if self.width >= self.i_width as f32 {
+            self.ended = true;
+            self.width = self.i_width as f32;
+            self.x = 0.0;
+        } else if self.width >= self.i_width as f32 * 3.0 / 4.0 {
+            self.ax = -1.0;
+        }
+
+        self.vx = self.velocity.getVelocity(self.width / self.i_width as f32) * VELOCITY;
+
     }
 
     fn to_rect(&self) -> Rect {
-        Rect::new(self.x as f32 / self.i_width as f32, self.y as f32 / self.i_height as f32, self.width as f32 / self.i_width as f32, 
-            self.height as f32 / self.i_height as f32)
+        Rect::new(self.x / self.i_width as f32, self.y / self.i_height as f32, self.width / self.i_width as f32, 
+            self.height / self.i_height as f32)
     }
 
     fn to_point(&self) -> Point2 {
-        if self.vx > 0 {
-            Point2::new(0.0, self.y as f32 as f32)
-        } else {
-            Point2::new((self.i_width - self.width) as f32, self.y as f32)
+        match self.direction {
+            Direction::Left => Point2::new(0.0, self.y),
+            _ => Point2::new(self.i_width as f32 - self.width, self.y)
         }
     }
 
@@ -94,6 +119,12 @@ impl Transition for Slides {
 
                         i.draw_ex(ctx, draw_param)?;
                         ended = false;
+
+                        //if slide.ended {
+                        //    println!("{:?}", draw_param.src);
+                        //    println!("{}", draw_param.dest);
+                        //}
+
                     }
                 }
             }
@@ -112,9 +143,9 @@ impl Transition for Slides {
         for i in 0..SLIDES {
             let y = (i as f32 * slide_height) as u32;
             if i % 2 == 0 {
-                &self.slides.push(Slide::from_left(image.width(), image.height(), y));
+                &self.slides.push(Slide::left(image.width(), image.height(), y));
             } else {
-                &self.slides.push(Slide::from_right(image.width(), image.height(), y));
+                &self.slides.push(Slide::right(image.width(), image.height(), y));
             }
         }
         
@@ -129,28 +160,28 @@ impl Transition for Slides {
 
 #[test]
 fn test_left_slide() {
-    let mut slide = Slide::from_left(100, 50, 0);
+    let mut slide = Slide::left(100, 50, 0);
 
     assert_eq!(false, slide.ended);
 
     slide.update();
 
     assert_eq!(false, slide.ended);
-    assert_eq!((100 - VELOCITY) as u32, slide.x);
+    assert_eq!(100.0 - VELOCITY, slide.x);
 
-    assert_eq!(VELOCITY as u32, slide.width);
+    assert_eq!(VELOCITY, slide.width);
 }
 
 #[test]
 fn test_right_slide() {
-    let mut slide = Slide::from_right(100, 50, 0);
+    let mut slide = Slide::right(100, 50, 0);
 
     assert_eq!(false, slide.ended);
 
     slide.update();
 
     assert_eq!(false, slide.ended);
-    assert_eq!(0, slide.x);
+    assert_eq!(0.0, slide.x);
 
-    assert_eq!(VELOCITY as u32, slide.width);
+    assert_eq!(VELOCITY, slide.width);
 }

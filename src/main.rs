@@ -1,6 +1,7 @@
 extern crate ggez;
 extern crate rand;
 extern crate image;
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -15,6 +16,7 @@ mod slideshow;
 mod pixels;
 mod quads;
 mod slides;
+mod velocity;
 
 use std::env;
 use std::path;
