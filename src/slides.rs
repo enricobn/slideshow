@@ -2,7 +2,6 @@ use ggez::*;
 use transition::*;
 use ggez::graphics::{Rect,DrawParam,Image,Point2,Drawable};
 use image::RgbaImage;
-use rand::Rng;
 use velocity::*;
 
 const SLIDES : u32 = 8;
@@ -35,7 +34,6 @@ struct Slide {
     height: f32,
     vx: f32,
     vy: i32,
-    ax: f32,
     direction: Direction,
     ended: bool,
     velocity: Box<Velocity>
@@ -45,13 +43,13 @@ impl Slide {
 
     fn left(i_width: u32, i_height: u32, y: u32) -> Slide {
         Slide{i_width: i_width, i_height: i_height, x: i_width as f32, y: y as f32, width: 0.0, 
-            height: i_height as f32 / SLIDES as f32, vx: VELOCITY, vy: 0, ax: 0.0, direction: Direction::Left, 
+            height: i_height as f32 / SLIDES as f32, vx: VELOCITY, vy: 0, direction: Direction::Left, 
             ended:false, velocity: Slide::velocity()}
     }
 
     fn right(i_width: u32, i_height: u32, y: u32) -> Slide {
         Slide{i_width: i_width, i_height: i_height, x: 0.0, y: y as f32, width: 0.0, 
-            height: i_height as f32 / SLIDES as f32, vx: VELOCITY, vy: 0, ax: 0.0, direction: Direction::Right, 
+            height: i_height as f32 / SLIDES as f32, vx: VELOCITY, vy: 0, direction: Direction::Right, 
             ended:false, velocity: Slide::velocity()}
     }
 
@@ -75,12 +73,9 @@ impl Slide {
             self.ended = true;
             self.width = self.i_width as f32;
             self.x = 0.0;
-        } else if self.width >= self.i_width as f32 * 3.0 / 4.0 {
-            self.ax = -1.0;
         }
 
-        self.vx = self.velocity.getVelocity(self.width / self.i_width as f32) * VELOCITY;
-
+        self.vx = self.velocity.get_velocity(self.width / self.i_width as f32) * VELOCITY;
     }
 
     fn to_rect(&self) -> Rect {

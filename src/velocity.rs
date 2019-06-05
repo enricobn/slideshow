@@ -1,6 +1,7 @@
 pub trait Velocity {
 
-    fn getVelocity(&self, perc: f32) -> f32;
+    /// perc must be between 0. and 1.0
+    fn get_velocity(&self, perc: f32) -> f32;
 
 }
 
@@ -10,6 +11,7 @@ pub struct StepsVelocity {
 
 impl StepsVelocity {
 
+    /// velocity is interpolated (linearly) from the given velocities
     pub fn new(steps: Vec<f32>) -> StepsVelocity {
         StepsVelocity{steps: steps}
     }
@@ -18,21 +20,22 @@ impl StepsVelocity {
 
 impl Velocity for StepsVelocity {
 
-    fn getVelocity(&self, perc: f32) -> f32 {
+    fn get_velocity(&self, perc: f32) -> f32 {
         let step_width = 1.0 / (self.steps.len() - 1) as f32;
         let steps = perc / step_width;
 
+        // perc is between left and right steps 
         let left_step = steps.floor();
         let right_step = steps.ceil();
-        let left = self.steps[left_step as usize];
-        let right = self.steps[right_step as usize];
+        let left_velocity = self.steps[left_step as usize];
+        let right_velocity = self.steps[right_step as usize];
 
-        let distance_from_right = step_width * right_step - perc;
+        let distance_from_right_step = step_width * right_step - perc;
 
-        let step_height = left - right;
-        let h = step_height * distance_from_right / step_width;
+        let velocity_difference = left_velocity - right_velocity;
+        let velocity_relative_to_right_step = velocity_difference * distance_from_right_step / step_width;
 
-        let v = h + right;
+        let v = velocity_relative_to_right_step + right_velocity;
 
         /*
         println!("*****************************************", );
