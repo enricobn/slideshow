@@ -57,12 +57,12 @@ impl Velocity for StepsVelocity {
 fn test_steps_velocity() {
     let vel = StepsVelocity::new(vec![1.0, 0.75, 0.5, 0.25, 0.0]); // 0 0.25 0.5 0.75 1
 
-    let mut v = vel.getVelocity(0.1);
+    let mut v = vel.get_velocity(0.1);
     assert_eq!(true, v > 0.75 && v < 1.0);
 
-    v = vel.getVelocity(0.25);
+    v = vel.get_velocity(0.25);
     assert_eq!(0.75, v);
 
-    v = vel.getVelocity(0.3);
+    v = vel.get_velocity(0.3);
     assert_eq!(true, v > 0.5 && v < 0.75);
 }
