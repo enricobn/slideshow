@@ -17,6 +17,7 @@ mod pixels;
 mod quads;
 mod slides;
 mod velocity;
+mod fade;
 
 use std::env;
 use std::path;

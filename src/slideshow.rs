@@ -8,6 +8,7 @@ use transition::*;
 use pixels::*;
 use quads::*;
 use slides::*;
+use fade::*;
 
 use image;
 
@@ -40,13 +41,14 @@ impl SlideShow {
                     "pixels" => Box::new(Pixels::new()),
                     "quads" => Box::new(Quads::new()),
                     "slides" => Box::new(Slides::new()),
+                    "fade" => Box::new(Fade::new()),
                     _ => {
                         println!("Unknown transition {}", s);
                         panic!();
                     }
                 }
             },
-            None => Box::new(Slides::new())
+            None => Box::new(Fade::new())
         };
 
         let directory = Path::new(folder_name.unwrap());
