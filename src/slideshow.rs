@@ -40,7 +40,8 @@ impl SlideShow {
                     "simple" => Box::new(SimpleTransition::new()),
                     "pixels" => Box::new(Pixels::new()),
                     "quads" => Box::new(Quads::new()),
-                    "slides" => Box::new(Slides::new()),
+                    "slide" => Box::new(Slides::new(1)),
+                    "slides" => Box::new(Slides::new(8)),
                     "fade" => Box::new(Fade::new()),
                     _ => {
                         println!("Unknown transition {}", s);

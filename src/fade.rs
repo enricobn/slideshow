@@ -49,7 +49,6 @@ impl Transition for Fade {
                                     color[2] = self.blend(last_color[2], color[2]);
                                 }
                             }
-
                             let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &ii.into_raw()).unwrap();
                             i.draw(ctx, Point2::new(0.0, 0.0), 0.0)?;
                         },
@@ -80,7 +79,6 @@ impl Transition for Fade {
     }
 
     fn update(&mut self, _ctx: &mut Context, image: RgbaImage) {        
-        //std::mem::replace(&mut self.last_image, self.image.clone());
         self.last_image = self.image.clone();
         self.image = Some(image);
         self.ended = false;
