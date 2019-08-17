@@ -1,7 +1,9 @@
 use ggez::*;
-use transition::*;
-use ggez::graphics::{Rect,DrawParam,Image,Point2,Drawable};
+use ggez::graphics::{Drawable, DrawParam, Image, Rect};
 use image::RgbaImage;
+
+use ggez_utils::Point2;
+use transition::*;
 use velocity::*;
 
 const VELOCITY : f32 = 15.0;
@@ -109,10 +111,10 @@ impl Transition for Slides {
                         &slide.update();
 
                         let mut draw_param = DrawParam::default();
-                        draw_param.src = slide.to_rect();
-                        draw_param.dest = slide.to_point();
+                        draw_param.src(slide.to_rect());
+                        draw_param.dest(slide.to_point());
 
-                        i.draw_ex(ctx, draw_param)?;
+                        i.draw(ctx, draw_param)?;
                         ended = false;
 
                         //if slide.ended {

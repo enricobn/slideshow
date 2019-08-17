@@ -1,3 +1,6 @@
 /target
 **/*.rs.bk
 run.sh
+.idea
+*.iml
+core

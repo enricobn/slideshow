@@ -1,8 +1,10 @@
 use ggez::*;
-use transition::*;
-use ggez::graphics::{Rect,DrawParam,Image,Point2,Drawable};
+use ggez::graphics::{Drawable, DrawParam, Image, Rect};
 use image::RgbaImage;
 use rand::Rng;
+
+use ggez_utils::Point2;
+use transition::*;
 
 const QUAD_SIZE : u32 = 30;
 
@@ -49,10 +51,10 @@ impl Transition for Quads {
                 let quad_y = removed.y as u32 * QUAD_SIZE;
 
                 let mut draw_param = DrawParam::default();
-                draw_param.src = Rect::new(quad_x as f32 / i.width() as f32, quad_y as f32 / i.height() as f32, QUAD_SIZE as f32 / i.width() as f32, QUAD_SIZE as f32 / i.height() as f32);
-                draw_param.dest = Point2::new(quad_x as f32, quad_y as f32);
+                draw_param.src(Rect::new(quad_x as f32 / i.width() as f32, quad_y as f32 / i.height() as f32, QUAD_SIZE as f32 / i.width() as f32, QUAD_SIZE as f32 / i.height() as f32));
+                draw_param.dest(Point2::new(quad_x as f32, quad_y as f32));
 
-                i.draw_ex(ctx, draw_param)?;
+                i.draw(ctx, draw_param)?;
             }
             None => {}
         }

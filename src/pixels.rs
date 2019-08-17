@@ -1,8 +1,10 @@
 use ggez::*;
-use transition::*;
-use ggez::graphics::{Color,Rect,DrawMode};
+use ggez::graphics::{Color, DrawMode, Rect};
 use image::RgbaImage;
 use rand::Rng;
+
+use ggez_utils::draw_rect;
+use transition::*;
 
 pub struct Pixels {
     pixels: Vec<Pixel>,
@@ -50,10 +52,8 @@ impl Transition for Pixels {
                 Some(i) => {
                     let p = i.get_pixel(removed.x as u32, removed.y as u32);
                     let c = pixel_to_color(p);
-                    graphics::set_color(ctx, c)?;
-                    
-                    graphics::rectangle(ctx, DrawMode::Fill, 
-                        Rect::new(removed.x as f32, removed.y as f32, 1.0, 1.0))?;
+
+                    draw_rect(ctx, removed.x as f32, removed.y as f32, 1.0, 1.0, &c)?;
                 }
                 None => {}
             }

@@ -6,3 +6,9 @@ TODO
 - full screen
 - make Grid a trait and the actual grid ColorGrid
 - I don't like QuadSide name and use, it's not clear what it means
+
+BUGS
+-----
+- I have to force x11-dl = "=2.18.3" in cargo.toml otherwise I get an  "Illegal instruction" error
+  - to enable core dump I have done:
+    - ulimit -c unlimited

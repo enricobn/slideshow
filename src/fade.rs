@@ -1,6 +1,8 @@
 use ggez::*;
-use ggez::graphics::{Point2,Image,Drawable};
+use ggez::graphics::{Drawable, Image, DrawParam};
 use image::RgbaImage;
+
+use ggez_utils::Point2;
 use transition::*;
 
 const VELOCITY : f32 = 1.0;
@@ -50,7 +52,11 @@ impl Transition for Fade {
                                 }
                             }
                             let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &ii.into_raw()).unwrap();
-                            i.draw(ctx, Point2::new(0.0, 0.0), 0.0)?;
+
+                            let mut draw_param = DrawParam::default();
+                            draw_param.dest(Point2::new(0.0, 0.0));
+
+                            i.draw(ctx, draw_param)?;
                         },
                         None => {
                             for x in 0..ii.width() {
@@ -62,7 +68,11 @@ impl Transition for Fade {
                                 }
                             }
                             let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &ii.into_raw()).unwrap();
-                            i.draw(ctx, Point2::new(0.0, 0.0), 0.0)?;
+                            let mut draw_param = DrawParam::default();
+                            draw_param.dest(Point2::new(0.0, 0.0));
+
+                            i.draw(ctx, draw_param)?;
+
                         }
                     }
                 },

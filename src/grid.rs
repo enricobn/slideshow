@@ -47,13 +47,11 @@ impl Grid {
     }
 
     pub fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        graphics::set_color(ctx, self.background_color)?;
-
         for quad in self.quads.iter_mut() {
             if !quad.is_updated() {
                continue; 
             }
-            quad.draw_bk(ctx)?;
+            quad.draw_bk(ctx, &self.background_color)?;
         }
 
         for quad in self.quads.iter_mut() {

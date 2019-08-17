@@ -1,6 +1,8 @@
 use ggez::*;
-use ggez::graphics::{Point2,Image,Drawable};
+use ggez::graphics::{Image, Drawable, BLACK, DrawParam};
 use image::RgbaImage;
+
+use ggez_utils::Point2;
 
 pub trait Transition {
 
@@ -30,8 +32,9 @@ impl Transition for SimpleTransition {
             self.ended = true;
             match &self.image {
                 Some(i) => {
-                    graphics::clear(ctx);
-                    i.draw(ctx, Point2::new(0.0, 0.0), 0.0)?;
+                    graphics::clear(ctx, BLACK);
+                    let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
+                    i.draw(ctx, param)?;
                 },
                 None => {}
             }

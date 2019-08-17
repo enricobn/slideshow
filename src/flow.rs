@@ -1,17 +1,14 @@
-use std;
 use std::ops::Sub;
 use std::time::Duration;
 use std::time::Instant;
 use std::path::Path;
 
 use ggez::*;
-use ggez::event::{EventHandler, Keycode, Mod, MouseState, MouseButton};
+use ggez::event::{EventHandler, MouseButton};
 use ggez::graphics::{Color};
-use ggez::timer::{get_delta, duration_to_f64};
-use ggez::timer::{get_fps};
-use image;
+use ggez::input::keyboard::{KeyCode, KeyMods};
+use ggez::timer::{self, delta, duration_to_f64};
 
-use fps::*;
 use sync_timer::*;
 use grid::*;
 
@@ -38,12 +35,10 @@ lazy_static! {
 }
 
 pub struct FlowState {
-    font: graphics::Font,
     grid: Grid,
     ctrl: bool,
     swapping_column: Option<usize>,
     timer: SyncTimer,
-    last_fps_print: Instant,
     file_names: Vec<String>,
     file_index: usize,
     quad_side: QuadSide,
@@ -52,7 +47,7 @@ pub struct FlowState {
 
 impl FlowState {
 
-    pub fn new(font: graphics::Font, args: Vec<String>) -> FlowState {
+    pub fn new(args: Vec<String>) -> FlowState {
         let folder_name = args.get(1);
 
         if folder_name.is_none() {
@@ -92,7 +87,7 @@ impl FlowState {
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("swap_column", Duration::from_millis(FLIP_DELAY), true));
 
-        FlowState{grid: grid, font: font, ctrl: false, swapping_column: None, timer: timer, last_fps_print: Instant::now(),
+        FlowState{grid: grid, ctrl: false, swapping_column: None, timer: timer, 
             file_names: file_names, file_index: 0, quad_side: QuadSide::Down, 
             last_ended_swap: Instant::now().sub(Duration::from_millis(LOAD_IMAGE_DELAY))}
     }
@@ -126,7 +121,7 @@ impl FlowState {
 impl EventHandler for FlowState {
 
     fn update(&mut self, _ctx: &mut Context) -> GameResult<()> {
-        let delta_duration = get_delta(_ctx);
+        let delta_duration = delta(_ctx);
         let delta = duration_to_f64(delta_duration);
 
         self.grid.update(delta);
@@ -178,9 +173,9 @@ impl EventHandler for FlowState {
         Ok(())
     }
 
-    fn key_down_event(&mut self, ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
+    fn key_down_event(&mut self, ctx: &mut Context, keycode: KeyCode, keymod: KeyMods, _repeat: bool) {
         match keycode {
-            Keycode::Escape => ctx.quit().unwrap(),
+            KeyCode::Escape => std::process::exit(0),
             /*Keycode::R => {
                 let mut i: usize = 0;
                 while i < self.quads.len() {
@@ -190,26 +185,22 @@ impl EventHandler for FlowState {
                     i += 1;
                 }     
             },*/
-            Keycode::RCtrl | Keycode::LCtrl => self.ctrl = true,
             _ => (), // Do nothing
         }
+
+        if keymod & KeyMods::CTRL == KeyMods::CTRL {
+            self.ctrl = true;
+        }
+
     }
 
-    fn key_up_event(&mut self, _ctx: &mut Context, keycode: Keycode, _keymod: Mod, _repeat: bool) {
-        if keycode == Keycode::RCtrl || keycode == Keycode::LCtrl {
+    fn key_up_event(&mut self, _ctx: &mut Context, keycode: KeyCode, keymods: KeyMods) {
+        if keymods & KeyMods::CTRL == KeyMods::CTRL {
             self.ctrl = false;
         }
     }
 
-    fn mouse_motion_event(
-        &mut self,
-        _ctx: &mut Context,
-        _state: MouseState,
-        x: i32,
-        y: i32,
-        _xrel: i32,
-        _yrel: i32,
-    ) {
+    fn mouse_motion_event(&mut self, _ctx: &mut Context, x: f32, y: f32, _dx: f32, _dy: f32) {
         if self.ctrl {
             self.grid.flip_quad_right(x as f32, y as f32, FLIP_VELOCITY);
         }
@@ -219,8 +210,8 @@ impl EventHandler for FlowState {
         &mut self,
         _ctx: &mut Context,
         _button: MouseButton,
-        x: i32,
-        y: i32,
+        x: f32,
+        y: f32,
     ) {
         self.grid.flip_quad_right(x as f32, y as f32, FLIP_VELOCITY);
     }
