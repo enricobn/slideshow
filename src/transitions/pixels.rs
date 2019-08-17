@@ -1,9 +1,9 @@
 use ggez::*;
-use ggez::graphics::{Color, DrawMode, Rect};
+use ggez::graphics::{Color, DrawMode, DrawParam, Drawable, MeshBuilder, Rect};
 use image::RgbaImage;
 use rand::Rng;
 
-use ggez_utils::draw_rect;
+use ggez_utils::{draw_rect, Point2};
 use transitions::transition::*;
 
 pub struct Pixels {
@@ -34,9 +34,16 @@ impl Pixel {
 impl Transition for Pixels {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+
+        if self.pixels.is_empty() {
+            return Ok(false);
+        }
+
         let mut rng = rand::thread_rng();
 
         let mut changed = false;
+
+        let mut mesh_builder = MeshBuilder::new();
 
         for _i in 0..2_000 {
             if self.pixels.is_empty() {
@@ -53,11 +60,19 @@ impl Transition for Pixels {
                     let p = i.get_pixel(removed.x as u32, removed.y as u32);
                     let c = pixel_to_color(p);
 
-                    draw_rect(ctx, removed.x as f32, removed.y as f32, 1.0, 1.0, &c)?;
+                    let rect = Rect::new(removed.x as f32, removed.y as f32, 1.0, 1.0);
+
+                    mesh_builder.rectangle(DrawMode::fill(), rect, c);
                 }
                 None => {}
             }
         }
+
+        let mesh = mesh_builder.build(ctx)?;
+
+        let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
+
+        mesh.draw(ctx, param)?;
 
         Ok(changed)
 
