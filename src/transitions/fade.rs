@@ -3,7 +3,7 @@ use ggez::graphics::{Drawable, Image, DrawParam};
 use image::RgbaImage;
 
 use ggez_utils::Point2;
-use transition::*;
+use transitions::transition::*;
 
 const VELOCITY : f32 = 1.0;
 

@@ -4,7 +4,7 @@ use image::RgbaImage;
 use rand::Rng;
 
 use ggez_utils::Point2;
-use transition::*;
+use transitions::transition::*;
 
 const QUAD_SIZE : u32 = 30;
 

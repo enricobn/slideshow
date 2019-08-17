@@ -11,13 +11,9 @@ mod quad;
 mod globals;
 mod ggez_utils;
 mod grid;
-mod transition;
+mod transitions;
 mod slideshow;
-mod pixels;
-mod quads;
-mod slides;
 mod velocity;
-mod fade;
 
 use std::env;
 use std::path;
@@ -42,7 +38,7 @@ fn main() -> GameResult<()> {
     let cb = ContextBuilder::new("screensaver", "ggez")
         .window_setup(
             conf::WindowSetup::default()
-                .title("Quad fight!")
+                .title("Screensaver")
                 .vsync(false)
         )
         .window_mode(

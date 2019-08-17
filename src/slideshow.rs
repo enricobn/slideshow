@@ -1,18 +1,16 @@
-use std;
-use std::time::Duration;
 use std::path::Path;
+use std::time::Duration;
 
 use ggez::*;
-use ggez::event::{EventHandler};
-use transition::*;
-use pixels::*;
-use quads::*;
-use slides::*;
-use fade::*;
-
+use ggez::event::EventHandler;
 use image;
 
 use sync_timer::*;
+use transitions::fade::Fade;
+use transitions::pixels::Pixels;
+use transitions::quads::Quads;
+use transitions::slides::Slides;
+use transitions::transition::{SimpleTransition, Transition};
 
 const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
 
@@ -82,8 +80,7 @@ impl SlideShow {
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
 
-        SlideShow{timer: timer, file_names: file_names, file_index: 0,
-            transition: transition, waiting: true}
+        SlideShow{timer, file_names, file_index: 0, transition, waiting: true}
     }
 
     fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {

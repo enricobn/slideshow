@@ -4,7 +4,7 @@ use image::RgbaImage;
 use rand::Rng;
 
 use ggez_utils::draw_rect;
-use transition::*;
+use transitions::transition::*;
 
 pub struct Pixels {
     pixels: Vec<Pixel>,
