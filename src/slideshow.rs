@@ -96,7 +96,7 @@ impl SlideShow {
         let img = image::open(&file_name).unwrap();
         let img_rgba = img.to_rgba();
 
-        self.transition.update(ctx, img_rgba);
+        self.transition.update_image(ctx, img_rgba);
         self.waiting = false;
 
         Ok(())

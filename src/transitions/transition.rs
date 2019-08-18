@@ -9,7 +9,7 @@ pub trait Transition {
     /// Should return true if the transition is still running.
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool>;
 
-    fn update(&mut self, ctx: &mut Context, image: RgbaImage);
+    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage);
 
 }
 
@@ -42,7 +42,7 @@ impl Transition for SimpleTransition {
         Ok(false)
     }
 
-    fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
         self.image = Some(i);
         self.ended = false;

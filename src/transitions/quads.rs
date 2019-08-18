@@ -69,7 +69,7 @@ impl Transition for Quads {
 
     }
 
-    fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         &self.quads.clear();
 
         let h_quads = image.width() / QUAD_SIZE; 

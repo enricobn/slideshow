@@ -88,7 +88,7 @@ impl Transition for Fade {
         Ok(!self.ended)
     }
 
-    fn update(&mut self, _ctx: &mut Context, image: RgbaImage) {        
+    fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
         self.last_image = self.image.clone();
         self.image = Some(image);
         self.ended = false;

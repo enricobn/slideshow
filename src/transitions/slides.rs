@@ -133,7 +133,7 @@ impl Transition for Slides {
 
     }
 
-    fn update(&mut self, ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         &self.slides.clear();
 
         let slide_height = image.height() as f32 / self.n_slides as f32;
