@@ -39,7 +39,7 @@ fn main() -> GameResult<()> {
         .window_setup(
             conf::WindowSetup::default()
                 .title("Screensaver")
-                .vsync(false)
+                .vsync(true)
         )
         .window_mode(
             conf::WindowMode::default()

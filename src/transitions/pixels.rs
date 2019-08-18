@@ -27,7 +27,7 @@ struct Pixel {
 impl Pixel {
 
     pub fn new(x: u16, y: u16) -> Pixel {
-        Pixel{x: x, y: y}
+        Pixel{x, y }
     }
 }
 

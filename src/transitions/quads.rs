@@ -50,9 +50,15 @@ impl Transition for Quads {
                 let quad_x = removed.x as u32 * QUAD_SIZE;
                 let quad_y = removed.y as u32 * QUAD_SIZE;
 
-                let mut draw_param = DrawParam::default();
-                draw_param.src(Rect::new(quad_x as f32 / i.width() as f32, quad_y as f32 / i.height() as f32, QUAD_SIZE as f32 / i.width() as f32, QUAD_SIZE as f32 / i.height() as f32));
-                draw_param.dest(Point2::new(quad_x as f32, quad_y as f32));
+                let x = quad_x as f32 / i.width() as f32;
+                let y = quad_y as f32 / i.height() as f32;
+                let width = QUAD_SIZE as f32 / i.width() as f32;
+                let height = QUAD_SIZE as f32 / i.height() as f32;
+
+                let mut draw_param =
+                    DrawParam::default()
+                        .src(Rect::new(x, y, width, height))
+                        .dest(Point2::new(quad_x as f32, quad_y as f32));
 
                 i.draw(ctx, draw_param)?;
             }

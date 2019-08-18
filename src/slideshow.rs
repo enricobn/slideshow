@@ -128,6 +128,8 @@ impl EventHandler for SlideShow {
             self.waiting = true;
         }
 
+        timer::yield_now();
+
         Ok(())
     }
 

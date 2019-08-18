@@ -110,9 +110,10 @@ impl Transition for Slides {
                     if !slide.ended {
                         &slide.update();
 
-                        let mut draw_param = DrawParam::default();
-                        draw_param.src(slide.to_rect());
-                        draw_param.dest(slide.to_point());
+                        let mut draw_param =
+                            DrawParam::default()
+                                .src(slide.to_rect())
+                                .dest(slide.to_point());
 
                         i.draw(ctx, draw_param)?;
                         ended = false;
