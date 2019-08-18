@@ -22,6 +22,7 @@ use slideshow::*;
 
 use ggez::*;
 use ggez::conf::{FullscreenType, WindowMode};
+use ggez::graphics::{self};
 
 fn main() -> GameResult<()> {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
@@ -32,8 +33,22 @@ fn main() -> GameResult<()> {
         path::PathBuf::from("../resources")
     };
 
-    let width = 1024.0;
-    let height = 800.0;
+    // TODO it's a bit weird, I create a context only to know the actual screen size,
+    // then I use it to build the real context!
+    let (width, height) = {
+        let window_mode = conf::WindowMode::default().fullscreen_type(FullscreenType::True);
+
+        let cb = ContextBuilder::new("screensaver", "ggez")
+            .window_setup(conf::WindowSetup::default())
+            .window_mode(window_mode);
+
+        let (ctx, events_loop) = &mut cb.build()?;
+
+        graphics::drawable_size(ctx)
+    };
+
+    let window_mode = conf::WindowMode::default().fullscreen_type(FullscreenType::True)
+        .dimensions(width, height);
 
     let cb = ContextBuilder::new("screensaver", "ggez")
         .window_setup(
@@ -41,13 +56,13 @@ fn main() -> GameResult<()> {
                 .title("Screensaver")
                 .vsync(true)
         )
-        .window_mode(
-            conf::WindowMode::default()
-                .dimensions(width, height)
-        )
+        .window_mode(window_mode)
         .add_resource_path(resource_dir);
 
     let (ctx, events_loop) = &mut cb.build()?;
+
+    println!("Drawable size {:?}", graphics::drawable_size(ctx));
+    println!("Screen coordinates {:?}", graphics::screen_coordinates(ctx));
 
     /*
     let mut c = conf::Conf::new();

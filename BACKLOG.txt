@@ -1,13 +1,13 @@
 DOING
 ------
+- resolution independent:
+  - scale the image to fit the screen
 
 NEXT
 -----
 - the velocity should be independent of the refresh rate
 - center images when do not fit the grid
 - add more types off effects
-- resolution independent
-- full screen
 - make Grid a trait and the actual grid ColorGrid
 - I don't like QuadSide name and use, it's not clear what it means
 
