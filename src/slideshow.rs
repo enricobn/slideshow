@@ -5,7 +5,7 @@ use ggez::*;
 use ggez::event::EventHandler;
 use ggez::graphics;
 use image;
-use image::CatmullRom;
+use image::{CatmullRom, ImageBuffer};
 
 use sync_timer::*;
 use transitions::fade::Fade;
@@ -110,7 +110,9 @@ impl SlideShow {
 
         let img = img.resize((img.width() as f32 * scale) as u32,
                              (img.height() as f32 * scale) as u32, CatmullRom);
-        let img_rgba = img.to_rgba();
+
+        let mut img_rgba = ImageBuffer::new(width as u32, height as u32);
+        img_rgba.copy_from(&img, ((width - img.width() as f32) / 2.0) as u32, ((height - img.height() as f32) / 2.0) as u32);
 
         self.transition.update_image(ctx, img_rgba);
         self.waiting = false;
