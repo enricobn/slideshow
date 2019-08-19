@@ -3,7 +3,9 @@ use std::time::Duration;
 
 use ggez::*;
 use ggez::event::EventHandler;
+use ggez::graphics;
 use image;
+use image::CatmullRom;
 
 use sync_timer::*;
 use transitions::fade::Fade;
@@ -11,6 +13,7 @@ use transitions::pixels::Pixels;
 use transitions::quads::Quads;
 use transitions::slides::Slides;
 use transitions::transition::{SimpleTransition, Transition};
+use image::{GenericImage, FilterType};
 
 const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
 
@@ -93,7 +96,20 @@ impl SlideShow {
             self.file_index = 0;
         }
 
-        let img = image::open(&file_name).unwrap();
+        let mut img = image::open(&file_name).unwrap();
+
+        let rect = graphics::screen_coordinates(ctx);
+
+        let width = rect.w;
+        let height = rect.h;
+
+        let scale_x = width / img.width() as f32;
+        let scale_y = height / img.height() as f32;
+
+        let scale = if scale_x < scale_y { scale_x } else {scale_y};
+
+        let img = img.resize((img.width() as f32 * scale) as u32,
+                             (img.height() as f32 * scale) as u32, CatmullRom);
         let img_rgba = img.to_rgba();
 
         self.transition.update_image(ctx, img_rgba);

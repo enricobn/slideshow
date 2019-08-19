@@ -1,10 +1,11 @@
 use ggez::*;
 use ggez::graphics::{Color, DrawMode, DrawParam, Drawable, MeshBuilder, Rect};
-use image::RgbaImage;
+use image::{RgbaImage, GenericImage};
 use rand::Rng;
 
 use ggez_utils::{draw_rect, Point2};
 use transitions::transition::*;
+use std::time::Instant;
 
 pub struct Pixels {
     pixels: Vec<Pixel>,
@@ -34,7 +35,7 @@ impl Pixel {
 impl Transition for Pixels {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
-
+        let start = Instant::now();
         if self.pixels.is_empty() {
             return Ok(false);
         }
@@ -45,18 +46,21 @@ impl Transition for Pixels {
 
         let mut mesh_builder = MeshBuilder::new();
 
-        for _i in 0..2_000 {
-            if self.pixels.is_empty() {
-                break;
-            }
+        match &self.image {
+            Some(i) => {
 
-            changed = true;
+                let count = i.width() * i.height() / 500;
 
-            let index = rng.gen_range(0usize, self.pixels.len());
-            let removed = &self.pixels.remove(index);
+                for _i in 0..count {
+                    if self.pixels.is_empty() {
+                        break;
+                    }
 
-            match &self.image {
-                Some(i) => {
+                    changed = true;
+
+                    let index = rng.gen_range(0usize, self.pixels.len());
+                    let removed = &self.pixels.pop().unwrap();
+
                     let p = i.get_pixel(removed.x as u32, removed.y as u32);
                     let c = pixel_to_color(p);
 
@@ -64,8 +68,8 @@ impl Transition for Pixels {
 
                     mesh_builder.rectangle(DrawMode::fill(), rect, c);
                 }
-                None => {}
             }
+            None => {}
         }
 
         let mesh = mesh_builder.build(ctx)?;
@@ -75,7 +79,6 @@ impl Transition for Pixels {
         mesh.draw(ctx, param)?;
 
         Ok(changed)
-
     }
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
@@ -85,6 +88,10 @@ impl Transition for Pixels {
                 &self.pixels.push(Pixel::new(x as u16, y as u16));
             }
         }
+
+        let mut rng = rand::thread_rng();
+
+        rng.shuffle(&mut self.pixels);
         
         self.image = Some(image);
     }
