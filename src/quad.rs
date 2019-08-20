@@ -4,7 +4,7 @@ use std::f64::consts::PI;
 use ggez::*;
 use ggez::graphics::{DrawMode, Color, Rect};
 
-use ggez_utils::{Point2, draw_rect };
+use ggez_utils::{Point2, draw_rect};
 
 pub struct Quad {
     pub x: f32,
@@ -69,13 +69,14 @@ impl Quad {
 
         self.updated = false;
 
-        draw_rect(ctx, self.x + delta, self.y + delta, self.width - 2.0 * delta, self.height, self.get_color());
+        draw_rect(ctx, self.x + delta, self.y + delta, self.width - 2.0 * delta, self.height, self.get_color(),
+                  DrawMode::fill());
 
         Ok(())
     }
 
     pub fn draw_bk(&self, ctx: &mut Context, color: &Color) -> GameResult<()> {
-        draw_rect(ctx, self.x, self.y, self.width, self.height, color)
+        draw_rect(ctx, self.x, self.y, self.width, self.height, color, DrawMode::fill())
     }
 
 

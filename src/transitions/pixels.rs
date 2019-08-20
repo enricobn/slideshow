@@ -3,7 +3,7 @@ use ggez::graphics::{Color, DrawMode, DrawParam, Drawable, MeshBuilder, Rect};
 use image::{RgbaImage, GenericImage};
 use rand::Rng;
 
-use ggez_utils::{draw_rect, Point2};
+use ggez_utils::Point2;
 use transitions::transition::*;
 use std::time::Instant;
 

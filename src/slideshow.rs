@@ -23,7 +23,8 @@ pub struct SlideShow {
     file_names: Vec<String>,
     file_index: usize,
     transition: Box<Transition>,
-    waiting: bool
+    waiting: bool,
+    first: bool
 }
 
 impl SlideShow {
@@ -84,7 +85,7 @@ impl SlideShow {
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
 
-        SlideShow{timer, file_names, file_index: 0, transition, waiting: true}
+        SlideShow{timer, file_names, file_index: 0, transition, waiting: true, first: true}
     }
 
     fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {
@@ -141,6 +142,14 @@ impl EventHandler for SlideShow {
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
+        // TODO I don't know why, but I have to issue an empty present otherwise in the first draw
+        // something weird happens with the image coordinates!
+        if self.first {
+            self.first = false;
+            graphics::present(ctx);
+            return Ok(());
+        }
+
         let running = self.transition.draw(ctx)?;
 
         graphics::present(ctx);

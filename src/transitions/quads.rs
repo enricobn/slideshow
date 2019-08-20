@@ -1,12 +1,12 @@
 use ggez::*;
-use ggez::graphics::{Drawable, DrawParam, Image, Rect};
+use ggez::graphics::{Drawable, DrawMode, DrawParam, Image, Rect, draw, WHITE};
 use image::RgbaImage;
 use rand::Rng;
 
-use ggez_utils::Point2;
+use ggez_utils::{draw_rect, Point2};
 use transitions::transition::*;
 
-const QUAD_SIZE : u32 = 30;
+const V_QUADS : u16 = 10;
 
 pub struct Quads {
     quads: Vec<Quad>,
@@ -29,38 +29,39 @@ struct Quad {
 impl Quad {
 
     pub fn new(x: u16, y: u16) -> Quad {
-        Quad{x: x, y: y}
+        Quad{ x, y }
     }
 }
 
 impl Transition for Quads {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
-        let mut rng = rand::thread_rng();
-
         if self.quads.is_empty() {
             return Ok(false);
         }
+
+        let mut rng = rand::thread_rng();
 
         let index = rng.gen_range(0usize, self.quads.len());
         let removed = &self.quads.remove(index);
 
         match &self.image {
-            Some(i) => {
-                let quad_x = removed.x as u32 * QUAD_SIZE;
-                let quad_y = removed.y as u32 * QUAD_SIZE;
+            Some(image) => {
+                let quad_size = image.height() as f32 / V_QUADS as f32;
+                let quad_x = removed.x as f32 * quad_size;
+                let quad_y = removed.y as f32 * quad_size;
 
-                let x = quad_x as f32 / i.width() as f32;
-                let y = quad_y as f32 / i.height() as f32;
-                let width = QUAD_SIZE as f32 / i.width() as f32;
-                let height = QUAD_SIZE as f32 / i.height() as f32;
+                let x = quad_x / image.width() as f32;
+                let y = quad_y / image.height() as f32;
+                let width = quad_size / image.width() as f32;
+                let height = quad_size / image.height() as f32;
 
                 let mut draw_param =
                     DrawParam::default()
                         .src(Rect::new(x, y, width, height))
-                        .dest(Point2::new(quad_x as f32, quad_y as f32));
+                        .dest(Point2::new(quad_x, quad_y));
 
-                i.draw(ctx, draw_param)?;
+                image.draw(ctx, draw_param)?;
             }
             None => {}
         }
@@ -72,12 +73,14 @@ impl Transition for Quads {
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         &self.quads.clear();
 
-        let h_quads = image.width() / QUAD_SIZE; 
-        let v_quads = image.height() / QUAD_SIZE;
+        let quad_size = image.height() as f32 / V_QUADS as f32;
+
+        let h_quads = (image.width() as f32 / quad_size) as u16;
+        let v_quads = (image.height() as f32 / quad_size) as u16;
 
         for x in 0..h_quads {
             for y in 0..v_quads {
-                &self.quads.push(Quad::new(x as u16, y as u16));
+                &self.quads.push(Quad::new(x, y));
             }
         }
         

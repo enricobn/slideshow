@@ -5,10 +5,10 @@ use ggez::timer::fps;
 pub type Point2 = nalgebra::Point2<f32>;
 pub type Vector2 = nalgebra::Vector2<f32>;
 
-pub fn draw_rect(ctx: &mut Context, x: f32, y: f32, width: f32, height: f32, color: &Color) -> GameResult {
+pub fn draw_rect(ctx: &mut Context, x: f32, y: f32, width: f32, height: f32, color: &Color, mode: DrawMode) -> GameResult {
     let rect = Rect::new(0.0, 0.0, width, height);
 
-    let mesh = Mesh::new_rectangle(ctx, DrawMode::fill(), rect, *color)?;
+    let mesh = Mesh::new_rectangle(ctx, mode, rect, *color)?;
 
     let param = DrawParam::new().dest(Point2::new(x, y));
 
