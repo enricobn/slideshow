@@ -43,14 +43,14 @@ struct Slide {
 
 impl Slide {
 
-    fn left(n_slides: u32, i_width: u32, i_height: u32, y: u32) -> Slide {
-        Slide{i_width: i_width, i_height: i_height, x: i_width as f32, y: y as f32, width: 0.0, 
+    fn left(n_slides: u32, i_width: u32, i_height: u32, y: f32) -> Slide {
+        Slide{i_width, i_height, x: i_width as f32, y: y, width: 0.0,
             height: i_height as f32 / n_slides as f32, vx: VELOCITY, vy: 0, direction: Direction::Left, 
             ended:false, velocity: Slide::velocity()}
     }
 
-    fn right(n_slides: u32, i_width: u32, i_height: u32, y: u32) -> Slide {
-        Slide{i_width: i_width, i_height: i_height, x: 0.0, y: y as f32, width: 0.0, 
+    fn right(n_slides: u32, i_width: u32, i_height: u32, y: f32) -> Slide {
+        Slide{i_width, i_height, x: 0.0, y: y as f32, width: 0.0,
             height: i_height as f32 / n_slides as f32, vx: VELOCITY, vy: 0, direction: Direction::Right, 
             ended:false, velocity: Slide::velocity()}
     }
@@ -139,12 +139,16 @@ impl Transition for Slides {
         let slide_height = image.height() as f32 / self.n_slides as f32;
 
         for i in 0..self.n_slides {
-            let y = (i as f32 * slide_height) as u32;
-            if i % 2 == 0 {
-                &self.slides.push(Slide::left(self.n_slides, image.width(), image.height(), y));
+            let y = i as f32 * slide_height;
+
+            let slide = if i % 2 == 0 {
+                Slide::left(self.n_slides, image.width(), image.height(), y)
             } else {
-                &self.slides.push(Slide::right(self.n_slides, image.width(), image.height(), y));
-            }
+                Slide::right(self.n_slides, image.width(), image.height(), y)
+            };
+
+            &self.slides.push(slide);
+
         }
         
         let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
@@ -158,7 +162,7 @@ impl Transition for Slides {
 
 #[test]
 fn test_left_slide() {
-    let mut slide = Slide::left(8, 100, 50, 0);
+    let mut slide = Slide::left(8, 100, 50, 0.0);
 
     assert_eq!(false, slide.ended);
 
@@ -172,7 +176,7 @@ fn test_left_slide() {
 
 #[test]
 fn test_right_slide() {
-    let mut slide = Slide::right(8, 100, 50, 0);
+    let mut slide = Slide::right(8, 100, 50, 0.0);
 
     assert_eq!(false, slide.ended);
 
