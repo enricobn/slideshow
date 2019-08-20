@@ -5,7 +5,7 @@ use ggez::*;
 use ggez::event::EventHandler;
 use ggez::graphics;
 use image;
-use image::{CatmullRom, ImageBuffer};
+use image::{CatmullRom, ImageBuffer, Rgba};
 
 use sync_timer::*;
 use transitions::fade::Fade;
@@ -14,6 +14,7 @@ use transitions::quads::Quads;
 use transitions::slides::Slides;
 use transitions::transition::{SimpleTransition, Transition};
 use image::{GenericImage, FilterType};
+use image::ColorType::RGBA;
 
 const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
 
@@ -111,7 +112,10 @@ impl SlideShow {
         let img = img.resize((img.width() as f32 * scale) as u32,
                              (img.height() as f32 * scale) as u32, CatmullRom);
 
-        let mut img_rgba = ImageBuffer::new(width as u32, height as u32);
+        let black = Rgba{ data: [0, 0, 0, 255] };
+
+        let mut img_rgba = ImageBuffer::from_pixel(width as u32, height as u32, black);
+
         img_rgba.copy_from(&img, ((width - img.width() as f32) / 2.0) as u32, ((height - img.height() as f32) / 2.0) as u32);
 
         self.transition.update_image(ctx, img_rgba);
