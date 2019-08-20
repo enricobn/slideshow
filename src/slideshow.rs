@@ -6,6 +6,7 @@ use ggez::event::EventHandler;
 use ggez::graphics;
 use image;
 use image::{CatmullRom, ImageBuffer, Rgba};
+use rand::Rng;
 
 use sync_timer::*;
 use transitions::fade::Fade;
@@ -81,6 +82,10 @@ impl SlideShow {
             println!("No image files found in {}", folder_name.unwrap());
             panic!();
         }
+
+        let mut rng = rand::thread_rng();
+
+        rng.shuffle(&mut file_names);
 
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
