@@ -38,7 +38,7 @@ fn main() -> GameResult<()> {
     let (width, height) = {
         let window_mode = conf::WindowMode::default().fullscreen_type(FullscreenType::True);
 
-        let cb = ContextBuilder::new("screensaver", "ggez")
+        let cb = ContextBuilder::new("slideshow", "ggez")
             .window_setup(conf::WindowSetup::default())
             .window_mode(window_mode);
 
@@ -50,10 +50,10 @@ fn main() -> GameResult<()> {
     let window_mode = conf::WindowMode::default().fullscreen_type(FullscreenType::True)
         .dimensions(width, height);
 
-    let cb = ContextBuilder::new("screensaver", "ggez")
+    let cb = ContextBuilder::new("slideshow", "ggez")
         .window_setup(
             conf::WindowSetup::default()
-                .title("Screensaver")
+                .title("Slideshow")
                 .vsync(true)
         )
         .window_mode(window_mode)
