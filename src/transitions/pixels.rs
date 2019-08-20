@@ -35,7 +35,7 @@ impl Pixel {
 impl Transition for Pixels {
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
-        let start = Instant::now();
+
         if self.pixels.is_empty() {
             return Ok(false);
         }
@@ -47,26 +47,23 @@ impl Transition for Pixels {
         let mut mesh_builder = MeshBuilder::new();
 
         match &self.image {
-            Some(i) => {
+            Some(image) => {
 
-                let count = i.width() * i.height() / 500;
+                changed = !self.pixels.is_empty();
+
+                let count = image.width() * image.height() / 300;
 
                 for _i in 0..count {
-                    if self.pixels.is_empty() {
+                    if let Some(pixel) = self.pixels.pop() {
+                        let pixel_rgba = image.get_pixel(pixel.x as u32, pixel.y as u32);
+                        let pixel_color = pixel_to_color(pixel_rgba);
+
+                        let rect = Rect::new(pixel.x as f32, pixel.y as f32, 1.0, 1.0);
+
+                        mesh_builder.rectangle(DrawMode::fill(), rect, pixel_color);
+                    } else {
                         break;
                     }
-
-                    changed = true;
-
-                    let index = rng.gen_range(0usize, self.pixels.len());
-                    let removed = &self.pixels.pop().unwrap();
-
-                    let p = i.get_pixel(removed.x as u32, removed.y as u32);
-                    let c = pixel_to_color(p);
-
-                    let rect = Rect::new(removed.x as f32, removed.y as f32, 1.0, 1.0);
-
-                    mesh_builder.rectangle(DrawMode::fill(), rect, c);
                 }
             }
             None => {}
@@ -83,6 +80,7 @@ impl Transition for Pixels {
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         &self.pixels.clear();
+
         for x in 0..image.width() {
             for y in 0..image.height() {
                 &self.pixels.push(Pixel::new(x as u16, y as u16));
