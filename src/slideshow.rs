@@ -16,6 +16,7 @@ use transitions::slides::Slides;
 use transitions::transition::{SimpleTransition, Transition};
 use image::{GenericImage, FilterType};
 use image::ColorType::RGBA;
+use transitions::distortion::Distortion;
 
 const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
 
@@ -47,6 +48,7 @@ impl SlideShow {
                     "slide" => Box::new(Slides::new(1)),
                     "slides" => Box::new(Slides::new(8)),
                     "fade" => Box::new(Fade::new()),
+                    "distortion" => Box::new(Distortion::new()),
                     _ => {
                         println!("Unknown transition {}", s);
                         panic!();

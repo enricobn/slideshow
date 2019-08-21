@@ -1,3 +1,4 @@
+pub mod distortion;
 pub mod quads;
 pub mod transition;
 pub mod fade;

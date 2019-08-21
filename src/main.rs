@@ -1,6 +1,7 @@
 extern crate ggez;
 extern crate rand;
 extern crate image;
+extern crate gfx;
 
 #[macro_use]
 extern crate lazy_static;
