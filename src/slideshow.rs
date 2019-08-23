@@ -13,6 +13,7 @@ use transitions::fade::Fade;
 use transitions::pixels::Pixels;
 use transitions::quads::Quads;
 use transitions::slides::Slides;
+use transitions::sphere::Sphere;
 use transitions::transition::{SimpleTransition, Transition};
 use image::{GenericImage, FilterType};
 use image::ColorType::RGBA;
@@ -49,6 +50,7 @@ impl SlideShow {
                     "slides" => Box::new(Slides::new(8)),
                     "fade" => Box::new(Fade::new()),
                     "distortion" => Box::new(Distortion::new()),
+                    "sphere" => Box::new(Sphere::new()),
                     _ => {
                         println!("Unknown transition {}", s);
                         panic!();
