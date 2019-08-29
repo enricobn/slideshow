@@ -1,5 +1,5 @@
-A program to view images in a slideshow
-========================================
+A program to view images in a slideshow written in rust
+========================================================
 
 Run
 -------
