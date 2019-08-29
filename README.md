@@ -6,11 +6,14 @@ Run
 `slideshow folder type`
 
 Type:
-- simple
-- quads
-- pixels
-- slides
+- distortion
 - fade (default)
+- pixels
+- quads
+- simple
+- slide
+- slides
+- sphere
 
 Compile and run
 ----------------

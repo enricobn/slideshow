@@ -6,19 +6,15 @@ extern crate gfx;
 #[macro_use]
 extern crate lazy_static;
 
-mod flow;
 mod sync_timer;
-mod quad;
 mod globals;
 mod ggez_utils;
-mod grid;
 mod transitions;
 mod slideshow;
 mod velocity;
 
 use std::env;
 use std::path;
-use flow::*;
 use slideshow::*;
 
 use ggez::*;
