@@ -47,7 +47,7 @@ fn main() -> GameResult<()> {
     let window_mode = conf::WindowMode::default().fullscreen_type(FullscreenType::True)
         .dimensions(width, height);
 
-    let cb = ContextBuilder::new("slideshow", "ggez")
+    let cb = ContextBuilder::new("slideshow", "enricobn")
         .window_setup(
             conf::WindowSetup::default()
                 .title("Slideshow")
@@ -61,55 +61,9 @@ fn main() -> GameResult<()> {
     println!("Drawable size {:?}", graphics::drawable_size(ctx));
     println!("Screen coordinates {:?}", graphics::screen_coordinates(ctx));
 
-    /*
-    let mut c = conf::Conf::new();
-    c.window_setup = c.window_setup.title("Slideshow");
-    // c.window_mode.fullscreen_type = FullscreenType::Desktop;
-    c.window_mode.vsync = true;
-    //c.window_mode.width = 1680;
-    //c.window_mode.height = 1050;
-
-    println!("screen: {}x{}", c.window_mode.width, c.window_mode.height);
-
-    let ctx = &mut Context::load_from_conf("super_simple", "ggez", c)?;
-
-    let modes = ggez::graphics::get_fullscreen_modes(ctx, 0)?;
-
-
-    if modes.len() == 0 {
-        panic!("No full screen modes available!"); // TODO  switch to windowed version
-    }
-
-    let width = modes[0].0; 
-    let height = modes[0].1;
-
-    let window_mode = WindowMode {
-        width: width,
-        height: height,
-        borderless: false,
-        fullscreen_type: FullscreenType::True,
-        vsync: true,
-        min_width: width,
-        max_width: height,
-        min_height: width,
-        max_height: height,
-    };
-
-    graphics::set_mode(ctx, window_mode)?;
-    */
-
-    //graphics::set_background_color(ctx, graphics::Color::from((0, 0, 0, 255)));
-
-
-    //c.window_mode.fullscreen_type = FullscreenType::Desktop;
-
-    //for (width, height) in modes {
-    //    println!("{}x{}", width, height);
-    //}
-
     let args: Vec<String> = env::args().collect();
 
-    let mut state = SlideShow::new(args); //FlowState::new(font, args);
+    let mut state = SlideShow::new(args);
 
     event::run(ctx, events_loop, &mut state)
 }
