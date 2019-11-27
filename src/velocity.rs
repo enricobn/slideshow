@@ -13,7 +13,7 @@ impl StepsVelocity {
 
     /// velocity is interpolated (linearly) from the given velocities
     pub fn new(steps: Vec<f32>) -> StepsVelocity {
-        StepsVelocity{steps: steps}
+        StepsVelocity{ steps }
     }
 
 }

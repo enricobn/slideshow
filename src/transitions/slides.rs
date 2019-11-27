@@ -44,7 +44,7 @@ struct Slide {
 impl Slide {
 
     fn left(n_slides: u32, i_width: u32, i_height: u32, y: f32) -> Slide {
-        Slide{i_width, i_height, x: i_width as f32, y: y, width: 0.0,
+        Slide{i_width, i_height, x: i_width as f32, y, width: 0.0,
             height: i_height as f32 / n_slides as f32, vx: VELOCITY, vy: 0, direction: Direction::Left, 
             ended:false, velocity: Slide::velocity()}
     }

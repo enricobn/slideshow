@@ -53,7 +53,7 @@ pub struct SyncEvent {
 impl SyncEvent {
 
     pub fn new(id: &'static str, after: Duration, recurring: bool) -> SyncEvent {
-        SyncEvent{id: id, start: Instant::now(), after: after, done: false, recurring: recurring}
+        SyncEvent{ id, start: Instant::now(), after, done: false, recurring }
     }
 
 }
