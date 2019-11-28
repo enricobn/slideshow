@@ -1,11 +1,10 @@
 use ggez::*;
 use ggez::graphics::{Color, DrawMode, DrawParam, Drawable, MeshBuilder, Rect};
-use image::{RgbaImage, GenericImage};
+use image::RgbaImage;
 use rand::Rng;
 
 use ggez_utils::Point2;
 use transitions::transition::*;
-use std::time::Instant;
 
 pub struct Pixels {
     pixels: Vec<Pixel>,
@@ -39,8 +38,6 @@ impl Transition for Pixels {
         if self.pixels.is_empty() {
             return Ok(false);
         }
-
-        let mut rng = rand::thread_rng();
 
         let mut changed = false;
 
@@ -78,7 +75,7 @@ impl Transition for Pixels {
         Ok(changed)
     }
 
-    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
         &self.pixels.clear();
 
         for x in 0..image.width() {

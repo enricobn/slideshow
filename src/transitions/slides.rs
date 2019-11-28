@@ -38,7 +38,7 @@ struct Slide {
     vy: i32,
     direction: Direction,
     ended: bool,
-    velocity: Box<Velocity>
+    velocity: Box<dyn Velocity>
 }
 
 impl Slide {
@@ -55,7 +55,7 @@ impl Slide {
             ended:false, velocity: Slide::velocity()}
     }
 
-    fn velocity() -> Box<Velocity> {
+    fn velocity() -> Box<dyn Velocity> {
         Box::new(StepsVelocity::new(vec![1.0, 1.5, 2.0, 1.5, 1.0, 0.1]))
     }
 
@@ -106,11 +106,11 @@ impl Transition for Slides {
 
         match &self.image {
             Some(i) => {
-                for mut slide in &mut self.slides {
+                for slide in &mut self.slides {
                     if !slide.ended {
                         &slide.update();
 
-                        let mut draw_param =
+                        let draw_param =
                             DrawParam::default()
                                 .src(slide.to_rect())
                                 .dest(slide.to_point());

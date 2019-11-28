@@ -15,8 +15,7 @@ use transitions::quads::Quads;
 use transitions::slides::Slides;
 use transitions::sphere::Sphere;
 use transitions::transition::{SimpleTransition, Transition};
-use image::{GenericImage, FilterType};
-use image::ColorType::RGBA;
+use image::GenericImage;
 use transitions::distortion::Distortion;
 
 const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
@@ -25,7 +24,7 @@ pub struct SlideShow {
     timer: SyncTimer,
     file_names: Vec<String>,
     file_index: usize,
-    transition: Box<Transition>,
+    transition: Box<dyn Transition>,
     waiting: bool,
     first: bool
 }
@@ -40,7 +39,7 @@ impl SlideShow {
             panic!();
         }
 
-        let transition : Box<Transition> = match args.get(2) {
+        let transition : Box<dyn Transition> = match args.get(2) {
             Some(s) => {
                 match s.as_str() {
                     "simple" => Box::new(SimpleTransition::new()),
@@ -107,7 +106,7 @@ impl SlideShow {
             self.file_index = 0;
         }
 
-        let mut img = image::open(&file_name).unwrap();
+        let img = image::open(&file_name).unwrap();
 
         let rect = graphics::screen_coordinates(ctx);
 

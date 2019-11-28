@@ -1,4 +1,4 @@
-use gfx::{self, *};
+use gfx::*;
 use ggez::*;
 use ggez::graphics::{Image, Drawable, BLACK, DrawParam};
 use image::RgbaImage;

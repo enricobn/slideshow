@@ -3,11 +3,9 @@ extern crate rand;
 extern crate image;
 extern crate gfx;
 
-#[macro_use]
 extern crate lazy_static;
 
 mod sync_timer;
-mod globals;
 mod ggez_utils;
 mod transitions;
 mod slideshow;
@@ -18,7 +16,7 @@ use std::path;
 use slideshow::*;
 
 use ggez::*;
-use ggez::conf::{FullscreenType, WindowMode};
+use ggez::conf::FullscreenType;
 use ggez::graphics::{self};
 
 fn main() -> GameResult<()> {
@@ -39,7 +37,7 @@ fn main() -> GameResult<()> {
             .window_setup(conf::WindowSetup::default())
             .window_mode(window_mode);
 
-        let (ctx, events_loop) = &mut cb.build()?;
+        let (ctx, _events_loop) = &mut cb.build()?;
 
         graphics::drawable_size(ctx)
     };

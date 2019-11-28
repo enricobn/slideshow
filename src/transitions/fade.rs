@@ -53,7 +53,7 @@ impl Transition for Fade {
                             }
                             let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &ii.into_raw()).unwrap();
 
-                            let mut draw_param = DrawParam::default();
+                            let draw_param = DrawParam::default();
                             draw_param.dest(Point2::new(0.0, 0.0));
 
                             i.draw(ctx, draw_param)?;
@@ -68,7 +68,7 @@ impl Transition for Fade {
                                 }
                             }
                             let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &ii.into_raw()).unwrap();
-                            let mut draw_param = DrawParam::default();
+                            let draw_param = DrawParam::default();
                             draw_param.dest(Point2::new(0.0, 0.0));
 
                             i.draw(ctx, draw_param)?;

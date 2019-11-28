@@ -1,9 +1,9 @@
 use ggez::*;
-use ggez::graphics::{Drawable, DrawMode, DrawParam, Image, Rect, draw, WHITE};
+use ggez::graphics::{ Drawable, DrawParam, Image, Rect };
 use image::RgbaImage;
 use rand::Rng;
 
-use ggez_utils::{draw_rect, Point2};
+use ggez_utils::Point2;
 use transitions::transition::*;
 
 const V_QUADS : u16 = 10;
@@ -56,7 +56,7 @@ impl Transition for Quads {
                 let width = quad_size / image.width() as f32;
                 let height = quad_size / image.height() as f32;
 
-                let mut draw_param =
+                let draw_param =
                     DrawParam::default()
                         .src(Rect::new(x, y, width, height))
                         .dest(Point2::new(quad_x, quad_y));
