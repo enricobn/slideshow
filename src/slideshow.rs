@@ -6,19 +6,19 @@ use ggez::event::EventHandler;
 use ggez::graphics;
 use image;
 use image::{CatmullRom, ImageBuffer, Rgba};
+use image::GenericImage;
 use rand::Rng;
 
 use sync_timer::*;
+use transitions::distortion::Distortion;
 use transitions::fade::Fade;
 use transitions::pixels::Pixels;
 use transitions::quads::Quads;
 use transitions::slides::Slides;
 use transitions::sphere::Sphere;
 use transitions::transition::{SimpleTransition, Transition};
-use image::GenericImage;
-use transitions::distortion::Distortion;
 
-const LOAD_IMAGE_DELAY : u64 = 5_000; // millis
+const LOAD_IMAGE_DELAY: u64 = 5_000; // millis
 
 pub struct SlideShow {
     timer: SyncTimer,
@@ -26,11 +26,10 @@ pub struct SlideShow {
     file_index: usize,
     transition: Box<dyn Transition>,
     waiting: bool,
-    first: bool
+    first: bool,
 }
 
 impl SlideShow {
-
     pub fn new(args: Vec<String>) -> SlideShow {
         let folder_name = args.get(1);
 
@@ -39,7 +38,7 @@ impl SlideShow {
             panic!();
         }
 
-        let transition : Box<dyn Transition> = match args.get(2) {
+        let transition: Box<dyn Transition> = match args.get(2) {
             Some(s) => {
                 match s.as_str() {
                     "simple" => Box::new(SimpleTransition::new()),
@@ -55,7 +54,7 @@ impl SlideShow {
                         panic!();
                     }
                 }
-            },
+            }
             None => Box::new(Fade::new())
         };
 
@@ -74,8 +73,8 @@ impl SlideShow {
                             file_name.to_uppercase().ends_with("JPG") ||
                             file_name.to_uppercase().ends_with("JPEG") ||
                             file_name.to_uppercase().ends_with("BMP") {
-                                file_names.push(file_name);
-                            }
+                            file_names.push(file_name);
+                        }
                     }
                 }
             }
@@ -93,7 +92,7 @@ impl SlideShow {
         let mut timer = SyncTimer::new();
         timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
 
-        SlideShow{timer, file_names, file_index: 0, transition, waiting: true, first: true}
+        SlideShow { timer, file_names, file_index: 0, transition, waiting: true, first: true }
     }
 
     fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {
@@ -116,12 +115,12 @@ impl SlideShow {
         let scale_x = width / img.width() as f32;
         let scale_y = height / img.height() as f32;
 
-        let scale = if scale_x < scale_y { scale_x } else {scale_y};
+        let scale = if scale_x < scale_y { scale_x } else { scale_y };
 
         let img = img.resize((img.width() as f32 * scale) as u32,
                              (img.height() as f32 * scale) as u32, CatmullRom);
 
-        let black = Rgba{ data: [0, 0, 0, 255] };
+        let black = Rgba { data: [0, 0, 0, 255] };
 
         let mut img_rgba = ImageBuffer::from_pixel(width as u32, height as u32, black);
 
@@ -132,11 +131,9 @@ impl SlideShow {
 
         Ok(())
     }
-
 }
 
 impl EventHandler for SlideShow {
-
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         let fired = self.timer.fired().clone();
 
@@ -171,5 +168,4 @@ impl EventHandler for SlideShow {
 
         Ok(())
     }
-
 }

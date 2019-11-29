@@ -1,23 +1,23 @@
-extern crate ggez;
-extern crate rand;
-extern crate image;
 extern crate gfx;
-
+extern crate ggez;
+extern crate image;
 extern crate lazy_static;
+extern crate rand;
+
+use std::env;
+use std::path;
+
+use ggez::*;
+use ggez::conf::FullscreenType;
+use ggez::graphics::{self};
+
+use slideshow::*;
 
 mod sync_timer;
 mod ggez_utils;
 mod transitions;
 mod slideshow;
 mod velocity;
-
-use std::env;
-use std::path;
-use slideshow::*;
-
-use ggez::*;
-use ggez::conf::FullscreenType;
-use ggez::graphics::{self};
 
 fn main() -> GameResult<()> {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {

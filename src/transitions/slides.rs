@@ -6,25 +6,23 @@ use ggez_utils::Point2;
 use transitions::transition::*;
 use velocity::*;
 
-const VELOCITY : f32 = 15.0;
+const VELOCITY: f32 = 15.0;
 
 pub struct Slides {
     n_slides: u32,
     slides: Vec<Slide>,
-    image: Option<Image>
+    image: Option<Image>,
 }
 
 impl Slides {
-
     pub fn new(slides: u32) -> Slides {
-        Slides{n_slides: slides, slides: Vec::new(), image: None}
+        Slides { n_slides: slides, slides: Vec::new(), image: None }
     }
-
 }
 
 enum Direction {
     Right,
-    Left
+    Left,
 }
 
 struct Slide {
@@ -38,21 +36,40 @@ struct Slide {
     vy: i32,
     direction: Direction,
     ended: bool,
-    velocity: Box<dyn Velocity>
+    velocity: Box<dyn Velocity>,
 }
 
 impl Slide {
-
     fn left(n_slides: u32, i_width: u32, i_height: u32, y: f32) -> Slide {
-        Slide{i_width, i_height, x: i_width as f32, y, width: 0.0,
-            height: i_height as f32 / n_slides as f32, vx: VELOCITY, vy: 0, direction: Direction::Left, 
-            ended:false, velocity: Slide::velocity()}
+        Slide {
+            i_width,
+            i_height,
+            x: i_width as f32,
+            y,
+            width: 0.0,
+            height: i_height as f32 / n_slides as f32,
+            vx: VELOCITY,
+            vy: 0,
+            direction: Direction::Left,
+            ended: false,
+            velocity: Slide::velocity(),
+        }
     }
 
     fn right(n_slides: u32, i_width: u32, i_height: u32, y: f32) -> Slide {
-        Slide{i_width, i_height, x: 0.0, y: y as f32, width: 0.0,
-            height: i_height as f32 / n_slides as f32, vx: VELOCITY, vy: 0, direction: Direction::Right, 
-            ended:false, velocity: Slide::velocity()}
+        Slide {
+            i_width,
+            i_height,
+            x: 0.0,
+            y: y as f32,
+            width: 0.0,
+            height: i_height as f32 / n_slides as f32,
+            vx: VELOCITY,
+            vy: 0,
+            direction: Direction::Right,
+            ended: false,
+            velocity: Slide::velocity(),
+        }
     }
 
     fn velocity() -> Box<dyn Velocity> {
@@ -81,8 +98,8 @@ impl Slide {
     }
 
     fn to_rect(&self) -> Rect {
-        Rect::new(self.x / self.i_width as f32, self.y / self.i_height as f32, self.width / self.i_width as f32, 
-            self.height / self.i_height as f32)
+        Rect::new(self.x / self.i_width as f32, self.y / self.i_height as f32, self.width / self.i_width as f32,
+                  self.height / self.i_height as f32)
     }
 
     fn to_point(&self) -> Point2 {
@@ -91,13 +108,10 @@ impl Slide {
             _ => Point2::new(self.i_width as f32 - self.width, self.y)
         }
     }
-
 }
 
 impl Transition for Slides {
-
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
-
         if self.slides.is_empty() {
             return Ok(false);
         }
@@ -122,7 +136,6 @@ impl Transition for Slides {
                         //    println!("{:?}", draw_param.src);
                         //    println!("{}", draw_param.dest);
                         //}
-
                     }
                 }
             }
@@ -130,7 +143,6 @@ impl Transition for Slides {
         }
 
         Ok(!ended)
-
     }
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
@@ -148,18 +160,15 @@ impl Transition for Slides {
             };
 
             &self.slides.push(slide);
-
         }
-        
+
         let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
 
         self.image = Some(i);
     }
-
 }
 
 #[cfg(test)]
-
 #[test]
 fn test_left_slide() {
     let mut slide = Slide::left(8, 100, 50, 0.0);

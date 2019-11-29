@@ -1,10 +1,9 @@
 use gfx::*;
 use ggez::*;
-use ggez::graphics::{Image, Drawable, BLACK, DrawParam};
+use ggez::graphics::{BLACK, Drawable, DrawParam, Image};
 use image::RgbaImage;
 
 use ggez_utils::Point2;
-
 use transitions::transition::Transition;
 
 // Define the input struct for our shader.
@@ -23,11 +22,10 @@ pub struct Sphere {
     image: Option<Image>,
     ended: bool,
     shader: Option<graphics::Shader<Dim>>,
-    dim: Dim
+    dim: Dim,
 }
 
 impl Sphere {
-
     pub fn new() -> Sphere {
         let dim = Dim {
             rate: 1.0,
@@ -35,14 +33,13 @@ impl Sphere {
             center_y: 0.5,
             radius: 0.5,
             aspect_ratio: 1.0,
-            refractive_index: 1.0
+            refractive_index: 1.0,
         };
-        Sphere {image: None, ended: true, shader: None, dim }
+        Sphere { image: None, ended: true, shader: None, dim }
     }
 }
 
 impl Transition for Sphere {
-
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
         if !self.ended {
             if self.dim.rate <= 0.0 {
@@ -61,7 +58,7 @@ impl Transition for Sphere {
 
                             i.draw(ctx, param)?;
                         }
-                    },
+                    }
                     None => {}
                 }
                 self.dim.rate -= 0.01;
@@ -89,5 +86,4 @@ impl Transition for Sphere {
         self.ended = false;
         self.dim.rate = 1.0;
     }
-
 }

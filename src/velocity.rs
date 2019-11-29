@@ -1,8 +1,6 @@
 pub trait Velocity {
-
     /// perc must be between 0. and 1.0
     fn get_velocity(&self, perc: f32) -> f32;
-
 }
 
 pub struct StepsVelocity {
@@ -10,16 +8,13 @@ pub struct StepsVelocity {
 }
 
 impl StepsVelocity {
-
     /// velocity is interpolated (linearly) from the given velocities
     pub fn new(steps: Vec<f32>) -> StepsVelocity {
-        StepsVelocity{ steps }
+        StepsVelocity { steps }
     }
-
 }
 
 impl Velocity for StepsVelocity {
-
     fn get_velocity(&self, perc: f32) -> f32 {
         let step_width = 1.0 / (self.steps.len() - 1) as f32;
         let steps = perc / step_width;
@@ -48,11 +43,9 @@ impl Velocity for StepsVelocity {
 
         v
     }
-
 }
 
 #[cfg(test)]
-
 #[test]
 fn test_steps_velocity() {
     let vel = StepsVelocity::new(vec![1.0, 0.75, 0.5, 0.25, 0.0]); // 0 0.25 0.5 0.75 1

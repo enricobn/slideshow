@@ -1,5 +1,5 @@
 use ggez::*;
-use ggez::graphics::{Color, DrawMode, DrawParam, Drawable, MeshBuilder, Rect};
+use ggez::graphics::{Color, Drawable, DrawMode, DrawParam, MeshBuilder, Rect};
 use image::RgbaImage;
 use rand::Rng;
 
@@ -12,29 +12,24 @@ pub struct Pixels {
 }
 
 impl Pixels {
-
     pub fn new() -> Pixels {
-        Pixels{pixels: Vec::new(), image: None}
+        Pixels { pixels: Vec::new(), image: None }
     }
-
 }
 
 struct Pixel {
     x: u16,
-    y: u16
+    y: u16,
 }
 
 impl Pixel {
-
     pub fn new(x: u16, y: u16) -> Pixel {
-        Pixel{x, y }
+        Pixel { x, y }
     }
 }
 
 impl Transition for Pixels {
-
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
-
         if self.pixels.is_empty() {
             return Ok(false);
         }
@@ -45,7 +40,6 @@ impl Transition for Pixels {
 
         match &self.image {
             Some(image) => {
-
                 changed = !self.pixels.is_empty();
 
                 let count = image.width() * image.height() / 300;
@@ -87,13 +81,12 @@ impl Transition for Pixels {
         let mut rng = rand::thread_rng();
 
         rng.shuffle(&mut self.pixels);
-        
+
         self.image = Some(image);
     }
-
 }
 
 fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
-    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0, 
-                        pixel.data[3] as f32 / 255.0)
+    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0,
+               pixel.data[3] as f32 / 255.0)
 }

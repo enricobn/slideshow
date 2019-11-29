@@ -1,5 +1,5 @@
 use ggez::*;
-use ggez::graphics::{Color, Mesh, Rect, DrawParam, DrawMode, Drawable};
+use ggez::graphics::{Color, Drawable, DrawMode, DrawParam, Mesh, Rect};
 
 pub type Point2 = nalgebra::Point2<f32>;
 

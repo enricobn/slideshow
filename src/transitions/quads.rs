@@ -1,40 +1,36 @@
 use ggez::*;
-use ggez::graphics::{ Drawable, DrawParam, Image, Rect };
+use ggez::graphics::{Drawable, DrawParam, Image, Rect};
 use image::RgbaImage;
 use rand::Rng;
 
 use ggez_utils::Point2;
 use transitions::transition::*;
 
-const V_QUADS : u16 = 10;
+const V_QUADS: u16 = 10;
 
 pub struct Quads {
     quads: Vec<Quad>,
-    image: Option<Image>
+    image: Option<Image>,
 }
 
 impl Quads {
-
     pub fn new() -> Quads {
-        Quads{quads: Vec::new(), image: None}
+        Quads { quads: Vec::new(), image: None }
     }
-
 }
 
 struct Quad {
     x: u16,
-    y: u16
+    y: u16,
 }
 
 impl Quad {
-
     pub fn new(x: u16, y: u16) -> Quad {
-        Quad{ x, y }
+        Quad { x, y }
     }
 }
 
 impl Transition for Quads {
-
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
         if self.quads.is_empty() {
             return Ok(false);
@@ -67,7 +63,6 @@ impl Transition for Quads {
         }
 
         Ok(true)
-
     }
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
@@ -83,10 +78,9 @@ impl Transition for Quads {
                 &self.quads.push(Quad::new(x, y));
             }
         }
-        
+
         let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
 
         self.image = Some(i);
     }
-
 }

@@ -1,10 +1,9 @@
 use gfx::*;
 use ggez::*;
-use ggez::graphics::{Image, Drawable, BLACK, DrawParam};
+use ggez::graphics::{BLACK, Drawable, DrawParam, Image};
 use image::RgbaImage;
 
 use ggez_utils::Point2;
-
 use transitions::transition::Transition;
 
 // Define the input struct for our shader.
@@ -18,18 +17,16 @@ pub struct Distortion {
     image: Option<Image>,
     ended: bool,
     shader: Option<graphics::Shader<Dim>>,
-    dim: Dim
+    dim: Dim,
 }
 
 impl Distortion {
-
     pub fn new() -> Distortion {
-        Distortion {image: None, ended: true, shader: None, dim: Dim{ rate: 1.0}}
+        Distortion { image: None, ended: true, shader: None, dim: Dim { rate: 1.0 } }
     }
 }
 
 impl Transition for Distortion {
-
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
         if !self.ended {
             if self.dim.rate <= 0.0 {
@@ -46,7 +43,7 @@ impl Transition for Distortion {
 
                             i.draw(ctx, param)?;
                         }
-                    },
+                    }
                     None => {}
                 }
                 self.dim.rate -= 0.01;
@@ -73,5 +70,4 @@ impl Transition for Distortion {
         self.ended = false;
         self.dim.rate = 1.0;
     }
-
 }
