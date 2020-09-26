@@ -16,3 +16,4 @@ lazy_static = "1.1.0"
 image = "0.19"
 # I have to force it otherwise I get an "Illegal instruction" error
 x11-dl = "=2.18.3"
+separator = "0.3.1"

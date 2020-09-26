@@ -1,5 +1,5 @@
 use std::path::Path;
-use std::time::Duration;
+use std::time::{Instant, Duration, SystemTime};
 
 use ggez::*;
 use ggez::event::EventHandler;
@@ -17,16 +17,20 @@ use transitions::quads::Quads;
 use transitions::slides::Slides;
 use transitions::sphere::Sphere;
 use transitions::transition::{SimpleTransition, Transition};
+use utils::format_duration;
 
 const LOAD_IMAGE_DELAY: u64 = 5_000; // millis
+const UPDATE_DELAY: u64 = 16; // millis
 
 pub struct SlideShow {
     timer: SyncTimer,
     file_names: Vec<String>,
     file_index: usize,
     transition: Box<dyn Transition>,
-    waiting: bool,
+    waiting_for_next_image: bool,
     first: bool,
+    fired_events: Vec<&'static str>,
+    image_updated: bool,
 }
 
 impl SlideShow {
@@ -90,9 +94,11 @@ impl SlideShow {
         rng.shuffle(&mut file_names);
 
         let mut timer = SyncTimer::new();
-        timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
+        //timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
+        timer.add(SyncEvent::new("draw", Duration::from_millis(UPDATE_DELAY), true));
 
-        SlideShow { timer, file_names, file_index: 0, transition, waiting: true, first: true }
+        SlideShow { timer, file_names, file_index: 0, transition, waiting_for_next_image: true, first: true ,
+        fired_events: Vec::new(), image_updated: false}
     }
 
     fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {
@@ -127,45 +133,70 @@ impl SlideShow {
         img_rgba.copy_from(&img, ((width - img.width() as f32) / 2.0) as u32, ((height - img.height() as f32) / 2.0) as u32);
 
         self.transition.update_image(ctx, img_rgba);
-        self.waiting = false;
+        self.waiting_for_next_image = false;
 
         Ok(())
     }
+
 }
 
 impl EventHandler for SlideShow {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        let fired = self.timer.fired().clone();
+        //println!("update start {:?}.", SystemTime::now());
 
-        for id in fired {
-            if id == "next_image" {
-                self.update_image(ctx)?;
-            }
+        self.fired_events = self.timer.fired().clone();
+
+        if self.first || self.fired_events.iter().any(|it| it == &"next_image") {
+            self.update_image(ctx)?;
+            self.image_updated = true;
+            self.first = false;
         }
 
+        //println!("update end {:?}.", SystemTime::now());
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        // TODO I don't know why, but I have to issue an empty present otherwise in the first draw
-        // something weird happens with the image coordinates!
-        if self.first {
-            self.first = false;
-            graphics::present(ctx);
+        //println!("draw start {:?}.", SystemTime::now());
+
+        if self.image_updated {
+            //println!("draw: image_updated");
+            self.image_updated = false;
+            //graphics::present(ctx);
             return Ok(());
         }
 
-        let running = self.transition.draw(ctx)?;
-
-        graphics::present(ctx);
-
-        if !running && !self.waiting {
-            self.timer.add(SyncEvent::new("next_image", Duration::from_millis(LOAD_IMAGE_DELAY), false));
-            self.waiting = true;
+        if !self.fired_events.iter().any(|it| it == &"draw") {
+            //graphics::present(ctx);
+            return Ok(());
         }
 
-        timer::yield_now();
+        //let start = Instant::now();
+        let transaction_finished = !self.transition.draw(ctx)?;
+        //println!("draw: transition done: {}.", transaction_finished);
+
+        //println!("draw 1 {:?}.", SystemTime::now());
+
+        if transaction_finished && !self.waiting_for_next_image {
+            //println!("draw: start waiting for next_image");
+            self.timer.add(SyncEvent::new("next_image", Duration::from_millis(LOAD_IMAGE_DELAY), false));
+            self.waiting_for_next_image = true;
+        } else if !self.waiting_for_next_image {
+            //println!("draw 2 {:?}.", SystemTime::now());
+
+            //println!("draw: main present");
+
+            graphics::present(ctx);
+
+            //println!("draw 3 {:?}.", SystemTime::now());
+
+
+            //println!("draw end {:?}.", SystemTime::now());
+        }
+
+        //timer::yield_now();
 
         Ok(())
     }
+
 }

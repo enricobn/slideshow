@@ -5,6 +5,7 @@ use image::RgbaImage;
 
 use ggez_utils::Point2;
 use transitions::transition::Transition;
+use std::time::SystemTime;
 
 // Define the input struct for our shader.
 gfx_defines! {
@@ -34,14 +35,20 @@ impl Transition for Distortion {
             } else {
                 match &self.image {
                     Some(i) => {
+                        //println!("Distortion 1 {:?}.", SystemTime::now());
                         graphics::clear(ctx, BLACK);
+                        //println!("Distortion 2 {:?}.", SystemTime::now());
                         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
                         if let Some(ref shader) = self.shader {
+                            //println!("Distortion 3 {:?}.", SystemTime::now());
                             let _lock = graphics::use_shader(ctx, shader);
+                            //println!("Distortion 4 {:?}.", SystemTime::now());
                             shader.send(ctx, self.dim)?;
+                            //println!("Distortion 5 {:?}.", SystemTime::now());
 
                             i.draw(ctx, param)?;
+                            //println!("Distortion 6 {:?}.", SystemTime::now());
                         }
                     }
                     None => {}

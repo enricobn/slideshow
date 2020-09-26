@@ -19,6 +19,7 @@ impl Quads {
     }
 }
 
+#[derive(Debug)]
 struct Quad {
     x: u16,
     y: u16,
@@ -40,6 +41,7 @@ impl Transition for Quads {
 
         let index = rng.gen_range(0usize, self.quads.len());
         let removed = &self.quads.remove(index);
+        //println!("draw quad {:?}", removed);
 
         match &self.image {
             Some(image) => {
@@ -51,6 +53,8 @@ impl Transition for Quads {
                 let y = quad_y / image.height() as f32;
                 let width = quad_size / image.width() as f32;
                 let height = quad_size / image.height() as f32;
+
+                //println!("{},{} -> {},{},{},{}", quad_x, quad_y, x, y, width, height);
 
                 let draw_param =
                     DrawParam::default()
@@ -75,7 +79,9 @@ impl Transition for Quads {
 
         for x in 0..h_quads {
             for y in 0..v_quads {
-                &self.quads.push(Quad::new(x, y));
+                let quad = Quad::new(x, y);
+                //println!("quad {:?}", &quad);
+                &self.quads.push(quad);
             }
         }
 

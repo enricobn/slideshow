@@ -18,21 +18,26 @@ impl SyncTimer {
 
     pub fn fired(&mut self) -> Vec<&'static str> {
         let mut result = Vec::new();
+        let mut to_remove = Vec::new();
 
         let now = Instant::now();
+        let mut index : usize = 0;
         for event in self.events.iter_mut() {
-            if !event.done {
-                let elapsed = now.sub(event.start);
+            let elapsed = now.sub(event.start);
 
-                if elapsed > event.after {
-                    if event.recurring {
-                        event.start = now;
-                    } else {
-                        event.done = true;
-                    }
-                    result.push(event.id);
+            if elapsed >= event.after {
+                if event.recurring {
+                    event.start = now;
+                } else {
+                    to_remove.push(index);
                 }
+                result.push(event.id);
             }
+            index = index + 1;
+        }
+
+        for i in to_remove.iter() {
+            self.events.remove(*i);
         }
 
         result
@@ -44,11 +49,10 @@ pub struct SyncEvent {
     start: Instant,
     after: Duration,
     recurring: bool,
-    done: bool,
 }
 
 impl SyncEvent {
     pub fn new(id: &'static str, after: Duration, recurring: bool) -> SyncEvent {
-        SyncEvent { id, start: Instant::now(), after, done: false, recurring }
+        SyncEvent { id, start: Instant::now(), after, recurring }
     }
 }

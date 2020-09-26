@@ -34,14 +34,10 @@ impl Transition for Pixels {
             return Ok(false);
         }
 
-        let mut changed = false;
-
         let mut mesh_builder = MeshBuilder::new();
 
         match &self.image {
             Some(image) => {
-                changed = !self.pixels.is_empty();
-
                 let count = image.width() * image.height() / 300;
 
                 for _i in 0..count {
@@ -66,7 +62,7 @@ impl Transition for Pixels {
 
         mesh.draw(ctx, param)?;
 
-        Ok(changed)
+        Ok(true)
     }
 
     fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
