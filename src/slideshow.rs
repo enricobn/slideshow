@@ -1,5 +1,5 @@
 use std::path::Path;
-use std::time::{Instant, Duration, SystemTime};
+use std::time::Duration;
 
 use ggez::*;
 use ggez::event::EventHandler;
@@ -17,7 +17,6 @@ use crate::transitions::quads::Quads;
 use crate::transitions::slides::Slides;
 use crate::transitions::sphere::Sphere;
 use crate::transitions::transition::{SimpleTransition, Transition};
-use crate::utils::format_duration;
 
 const LOAD_IMAGE_DELAY: u64 = 5_000; // millis
 const UPDATE_DELAY: u64 = 16; // millis
@@ -185,7 +184,7 @@ impl EventHandler<ggez::GameError> for SlideShow {
 
             //println!("draw: main present");
 
-            graphics::present(ctx);
+            graphics::present(ctx)?;
 
             //println!("draw 3 {:?}.", SystemTime::now());
 

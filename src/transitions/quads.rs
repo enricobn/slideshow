@@ -70,7 +70,7 @@ impl Transition for Quads {
     }
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
-        &self.quads.clear();
+        self.quads.clear();
 
         let quad_size = image.height() as f32 / V_QUADS as f32;
 
@@ -81,7 +81,7 @@ impl Transition for Quads {
             for y in 0..v_quads {
                 let quad = Quad::new(x, y);
                 //println!("quad {:?}", &quad);
-                &self.quads.push(quad);
+                self.quads.push(quad);
             }
         }
 

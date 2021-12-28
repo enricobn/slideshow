@@ -47,7 +47,7 @@ impl Transition for Pixels {
 
                         let rect = Rect::new(pixel.x as f32, pixel.y as f32, 1.0, 1.0);
 
-                        mesh_builder.rectangle(DrawMode::fill(), rect, pixel_color);
+                        mesh_builder.rectangle(DrawMode::fill(), rect, pixel_color)?;
                     } else {
                         break;
                     }
@@ -66,11 +66,11 @@ impl Transition for Pixels {
     }
 
     fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
-        &self.pixels.clear();
+        self.pixels.clear();
 
         for x in 0..image.width() {
             for y in 0..image.height() {
-                &self.pixels.push(Pixel::new(x as u16, y as u16));
+                self.pixels.push(Pixel::new(x as u16, y as u16));
             }
         }
 

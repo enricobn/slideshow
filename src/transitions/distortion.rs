@@ -5,7 +5,6 @@ use image::RgbaImage;
 
 use crate::ggez_utils::Point2;
 use crate::transitions::transition::Transition;
-use std::time::SystemTime;
 
 // Define the input struct for our shader.
 gfx_defines! {

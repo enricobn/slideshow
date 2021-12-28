@@ -120,9 +120,9 @@ impl Transition for Slides {
 
         match &self.image {
             Some(i) => {
-                for slide in &mut self.slides {
+                for slide in self.slides.iter_mut() {
                     if !slide.ended {
-                        &slide.update();
+                        slide.update();
 
                         let draw_param =
                             DrawParam::default()
@@ -147,7 +147,7 @@ impl Transition for Slides {
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         //println!("slides update_image");
-        &self.slides.clear();
+        self.slides.clear();
 
         let slide_height = image.height() as f32 / self.n_slides as f32;
 
@@ -160,7 +160,7 @@ impl Transition for Slides {
                 Slide::right(self.n_slides, image.width(), image.height(), y)
             };
 
-            &self.slides.push(slide);
+            self.slides.push(slide);
         }
 
         let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
