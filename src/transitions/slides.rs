@@ -170,30 +170,34 @@ impl Transition for Slides {
 }
 
 #[cfg(test)]
-#[test]
-fn test_left_slide() {
-    let mut slide = Slide::left(8, 100, 50, 0.0);
+mod tests {
+    use super::*;
 
-    assert_eq!(false, slide.ended);
+    #[test]
+    fn test_left_slide() {
+        let mut slide = Slide::left(8, 100, 50, 0.0);
 
-    slide.update();
+        assert_eq!(false, slide.ended);
 
-    assert_eq!(false, slide.ended);
-    assert_eq!(100.0 - VELOCITY, slide.x);
+        slide.update();
 
-    assert_eq!(VELOCITY, slide.width);
-}
+        assert_eq!(false, slide.ended);
+        assert_eq!(100.0 - VELOCITY, slide.x);
 
-#[test]
-fn test_right_slide() {
-    let mut slide = Slide::right(8, 100, 50, 0.0);
+        assert_eq!(VELOCITY, slide.width);
+    }
 
-    assert_eq!(false, slide.ended);
+    #[test]
+    fn test_right_slide() {
+        let mut slide = Slide::right(8, 100, 50, 0.0);
 
-    slide.update();
+        assert_eq!(false, slide.ended);
 
-    assert_eq!(false, slide.ended);
-    assert_eq!(0.0, slide.x);
+        slide.update();
 
-    assert_eq!(VELOCITY, slide.width);
+        assert_eq!(false, slide.ended);
+        assert_eq!(0.0, slide.x);
+
+        assert_eq!(VELOCITY, slide.width);
+    }
 }

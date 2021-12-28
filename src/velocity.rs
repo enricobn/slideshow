@@ -46,16 +46,20 @@ impl Velocity for StepsVelocity {
 }
 
 #[cfg(test)]
-#[test]
-fn test_steps_velocity() {
-    let vel = StepsVelocity::new(vec![1.0, 0.75, 0.5, 0.25, 0.0]); // 0 0.25 0.5 0.75 1
+mod tests {
+    use super::*;
 
-    let mut v = vel.get_velocity(0.1);
-    assert_eq!(true, v > 0.75 && v < 1.0);
+    #[test]
+    fn test_steps_velocity() {
+        let vel = StepsVelocity::new(vec![1.0, 0.75, 0.5, 0.25, 0.0]); // 0 0.25 0.5 0.75 1
 
-    v = vel.get_velocity(0.25);
-    assert_eq!(0.75, v);
+        let mut v = vel.get_velocity(0.1);
+        assert_eq!(true, v > 0.75 && v < 1.0);
 
-    v = vel.get_velocity(0.3);
-    assert_eq!(true, v > 0.5 && v < 0.75);
+        v = vel.get_velocity(0.25);
+        assert_eq!(0.75, v);
+
+        v = vel.get_velocity(0.3);
+        assert_eq!(true, v > 0.5 && v < 0.75);
+    }
 }

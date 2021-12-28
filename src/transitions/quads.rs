@@ -40,7 +40,7 @@ impl Transition for Quads {
         let mut rng = rand::thread_rng();
 
         let index = rng.gen_range(0usize, self.quads.len());
-        let removed = &self.quads.remove(index);
+        let removed = self.quads.remove(index);
         //println!("draw quad {:?}", removed);
 
         match &self.image {
