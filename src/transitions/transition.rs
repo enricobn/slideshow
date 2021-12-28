@@ -26,8 +26,8 @@ impl Transition for SimpleTransition {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
         if !self.ended {
             self.ended = true;
-            match &self.image {
-                Some(i) => {
+            match self.image {
+                Some(ref i) => {
                     graphics::clear(ctx, Color::BLACK);
                     let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
                     i.draw(ctx, param)?;

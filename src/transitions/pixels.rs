@@ -36,8 +36,8 @@ impl Transition for Pixels {
 
         let mut mesh_builder = MeshBuilder::new();
 
-        match &self.image {
-            Some(image) => {
+        match self.image {
+            Some(ref image) => {
                 let count = image.width() * image.height() / 300;
 
                 for _i in 0..count {
