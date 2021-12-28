@@ -3,8 +3,8 @@ use ggez::graphics::{Color, Drawable, DrawMode, DrawParam, MeshBuilder, Rect};
 use image::RgbaImage;
 use rand::Rng;
 
-use ggez_utils::Point2;
-use transitions::transition::*;
+use crate::ggez_utils::Point2;
+use crate::transitions::transition::*;
 
 pub struct Pixels {
     pixels: Vec<Pixel>,

@@ -3,8 +3,8 @@ use ggez::graphics::{Drawable, DrawParam, Image, Rect};
 use image::RgbaImage;
 use rand::Rng;
 
-use ggez_utils::Point2;
-use transitions::transition::*;
+use crate::ggez_utils::Point2;
+use crate::transitions::transition::*;
 
 const V_QUADS: u16 = 10;
 

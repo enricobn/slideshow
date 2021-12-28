@@ -1,10 +1,10 @@
 use gfx::*;
 use ggez::*;
-use ggez::graphics::{BLACK, Drawable, DrawParam, Image};
+use ggez::graphics::{Color, Drawable, DrawParam, Image};
 use image::RgbaImage;
 
-use ggez_utils::Point2;
-use transitions::transition::Transition;
+use crate::ggez_utils::Point2;
+use crate::transitions::transition::Transition;
 use std::time::SystemTime;
 
 // Define the input struct for our shader.
@@ -36,7 +36,7 @@ impl Transition for Distortion {
                 match &self.image {
                     Some(i) => {
                         //println!("Distortion 1 {:?}.", SystemTime::now());
-                        graphics::clear(ctx, BLACK);
+                        graphics::clear(ctx, Color::BLACK);
                         //println!("Distortion 2 {:?}.", SystemTime::now());
                         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 

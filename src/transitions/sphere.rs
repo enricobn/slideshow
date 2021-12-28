@@ -1,10 +1,10 @@
 use gfx::*;
 use ggez::*;
-use ggez::graphics::{BLACK, Drawable, DrawParam, Image};
+use ggez::graphics::{Color, Drawable, DrawParam, Image};
 use image::RgbaImage;
 
-use ggez_utils::Point2;
-use transitions::transition::Transition;
+use crate::ggez_utils::Point2;
+use crate::transitions::transition::Transition;
 
 // Define the input struct for our shader.
 gfx_defines! {
@@ -49,7 +49,7 @@ impl Transition for Sphere {
                 self.dim.radius = self.dim.refractive_index / 2.0;
                 match &self.image {
                     Some(i) => {
-                        graphics::clear(ctx, BLACK);
+                        graphics::clear(ctx, Color::BLACK);
                         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
                         if let Some(ref shader) = self.shader {

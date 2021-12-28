@@ -2,9 +2,9 @@ use ggez::*;
 use ggez::graphics::{Drawable, DrawParam, Image, Rect};
 use image::RgbaImage;
 
-use ggez_utils::Point2;
-use transitions::transition::*;
-use velocity::*;
+use crate::ggez_utils::Point2;
+use crate::transitions::transition::*;
+use crate::velocity::*;
 
 const VELOCITY: f32 = 15.0;
 

@@ -2,8 +2,8 @@ use ggez::*;
 use ggez::graphics::{Drawable, DrawParam, Image};
 use image::RgbaImage;
 
-use ggez_utils::Point2;
-use transitions::transition::*;
+use crate::ggez_utils::Point2;
+use crate::transitions::transition::*;
 
 const VELOCITY: f32 = 1.0;
 

@@ -9,15 +9,15 @@ use image::{CatmullRom, ImageBuffer, Rgba};
 use image::GenericImage;
 use rand::Rng;
 
-use sync_timer::*;
-use transitions::distortion::Distortion;
-use transitions::fade::Fade;
-use transitions::pixels::Pixels;
-use transitions::quads::Quads;
-use transitions::slides::Slides;
-use transitions::sphere::Sphere;
-use transitions::transition::{SimpleTransition, Transition};
-use utils::format_duration;
+use crate::sync_timer::*;
+use crate::transitions::distortion::Distortion;
+use crate::transitions::fade::Fade;
+use crate::transitions::pixels::Pixels;
+use crate::transitions::quads::Quads;
+use crate::transitions::slides::Slides;
+use crate::transitions::sphere::Sphere;
+use crate::transitions::transition::{SimpleTransition, Transition};
+use crate::utils::format_duration;
 
 const LOAD_IMAGE_DELAY: u64 = 5_000; // millis
 const UPDATE_DELAY: u64 = 16; // millis
@@ -54,8 +54,7 @@ impl SlideShow {
                     "distortion" => Box::new(Distortion::new()),
                     "sphere" => Box::new(Sphere::new()),
                     _ => {
-                        println!("Unknown transition {}", s);
-                        panic!();
+                        panic!("Unknown transition {}", s);
                     }
                 }
             }
@@ -140,7 +139,7 @@ impl SlideShow {
 
 }
 
-impl EventHandler for SlideShow {
+impl EventHandler<ggez::GameError> for SlideShow {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         //println!("update start {:?}.", SystemTime::now());
 

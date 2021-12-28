@@ -12,7 +12,7 @@ use ggez::*;
 use ggez::conf::FullscreenType;
 use ggez::graphics::{self};
 
-use slideshow::*;
+use crate::slideshow::*;
 
 mod sync_timer;
 mod ggez_utils;
@@ -24,12 +24,12 @@ mod utils;
 fn main() -> GameResult<()> {
     let args: Vec<String> = env::args().collect();
 
-    let mut state = SlideShow::new(args);
+    let state = SlideShow::new(args);
 
-    build_context_and_run(&mut state)
+    build_context_and_run(state)
 }
 
-fn build_context_and_run(mut state: &mut SlideShow) -> Result<(), GameError> {
+fn build_context_and_run(state: SlideShow) -> Result<(), GameError> {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
         let mut path = path::PathBuf::from(manifest_dir);
         path.push("resources");
@@ -53,10 +53,10 @@ fn build_context_and_run(mut state: &mut SlideShow) -> Result<(), GameError> {
         .window_mode(window_mode)
         .add_resource_path(resource_dir);
 
-    let (ctx, events_loop) = &mut cb.build()?;
+    let (ctx, events_loop) = cb.build()?;
 
-    println!("Drawable size {:?}", graphics::drawable_size(ctx));
-    println!("Screen coordinates {:?}", graphics::screen_coordinates(ctx));
+    println!("Drawable size {:?}", graphics::drawable_size(&ctx));
+    println!("Screen coordinates {:?}", graphics::screen_coordinates(&ctx));
 
     event::run(ctx, events_loop, state)
 }
