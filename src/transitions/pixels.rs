@@ -83,6 +83,6 @@ impl Transition for Pixels {
 }
 
 fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
-    Color::new(pixel.data[0] as f32 / 255.0, pixel.data[1] as f32 / 255.0, pixel.data[2] as f32 / 255.0,
-               pixel.data[3] as f32 / 255.0)
+    Color::new(pixel.0[0] as f32 / 255.0, pixel.0[1] as f32 / 255.0, pixel.0[2] as f32 / 255.0,
+               pixel.0[3] as f32 / 255.0)
 }

@@ -10,17 +10,12 @@ edition = "2021"
 cargo-resource-root = []
 
 [dependencies]
-ggez = "0.6"
-gfx = "0.18.1"
-rand = "0.5.5"
+ggez = "0.7"
+gfx = "0.18"
+rand = "0.5"
 lazy_static = "1.1"
-image = "0.19"
+image = "0.23"
 nalgebra = { version = "0.29", features = ["mint"] }
 # I have to force it otherwise I get an "Illegal instruction" error
 #x11-dl = "=2.18.3"
-separator = "0.3.1"
-
-# for security alerts
-#nix = "0.20.2"
-#thread_local = "1.1.4"
-#regex = "1.5.5"
+separator = "0.4"

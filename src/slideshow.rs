@@ -5,8 +5,8 @@ use ggez::*;
 use ggez::event::EventHandler;
 use ggez::graphics;
 use image;
-use image::{CatmullRom, ImageBuffer, Rgba};
-use image::GenericImage;
+use image::{GenericImage, GenericImageView, ImageBuffer};
+use image::imageops::CatmullRom;
 use rand::Rng;
 
 use crate::sync_timer::*;
@@ -124,11 +124,11 @@ impl SlideShow {
         let img = img.resize((img.width() as f32 * scale) as u32,
                              (img.height() as f32 * scale) as u32, CatmullRom);
 
-        let black = Rgba { data: [0, 0, 0, 255] };
+        let black = image::Rgba { 0: [0, 0, 0, 255] };
 
         let mut img_rgba = ImageBuffer::from_pixel(width as u32, height as u32, black);
 
-        img_rgba.copy_from(&img, ((width - img.width() as f32) / 2.0) as u32, ((height - img.height() as f32) / 2.0) as u32);
+        img_rgba.copy_from(&img, ((width - img.width() as f32) / 2.0) as u32, ((height - img.height() as f32) / 2.0) as u32)?;
 
         self.transition.update_image(ctx, img_rgba);
         self.waiting_for_next_image = false;
@@ -138,7 +138,7 @@ impl SlideShow {
 
 }
 
-impl EventHandler<ggez::GameError> for SlideShow {
+impl EventHandler<GameError> for SlideShow {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
         //println!("update start {:?}.", SystemTime::now());
 
