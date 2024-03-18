@@ -10,10 +10,12 @@ use image::{GenericImage, GenericImageView, ImageBuffer};
 use rand::Rng;
 
 use crate::sync_timer::*;
+use crate::transitions::distortion::Distortion;
 use crate::transitions::fade::Fade;
 use crate::transitions::pixels::Pixels;
 use crate::transitions::quads::Quads;
 use crate::transitions::slides::Slides;
+use crate::transitions::sphere::Sphere;
 use crate::transitions::transition::{SimpleTransition, Transition};
 
 const LOAD_IMAGE_DELAY: u64 = 5_000; // millis
@@ -40,21 +42,19 @@ impl SlideShow {
         }
 
         let transition: Box<dyn Transition> = match args.get(2) {
-            Some(s) => {
-                match s.as_str() {
-                    "simple" => Box::new(SimpleTransition::new()),
-                    "pixels" => Box::new(Pixels::new()),
-                    "quads" => Box::new(Quads::new()),
-                    "slide" => Box::new(Slides::new(1)),
-                    "slides" => Box::new(Slides::new(8)),
-                    "fade" => Box::new(Fade::new()),
-                    //"distortion" => Box::new(Distortion::new()),
-                    //"sphere" => Box::new(Sphere::new()),
-                    _ => {
-                        panic!("Unknown transition {}", s);
-                    }
+            Some(s) => match s.as_str() {
+                "simple" => Box::new(SimpleTransition::new()),
+                "pixels" => Box::new(Pixels::new()),
+                "quads" => Box::new(Quads::new()),
+                "slide" => Box::new(Slides::new(1)),
+                "slides" => Box::new(Slides::new(8)),
+                "fade" => Box::new(Fade::new()),
+                "distortion" => Box::new(Distortion::new()),
+                "sphere" => Box::new(Sphere::new()),
+                _ => {
+                    panic!("Unknown transition {}", s);
                 }
-            }
+            },
             None => Box::new(Fade::new()),
         };
 

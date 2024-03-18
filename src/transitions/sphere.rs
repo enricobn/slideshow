@@ -66,12 +66,14 @@ impl Transition for Sphere {
                             let i = Image::from_pixels(
                                 ctx,
                                 image.as_raw(),
-                                ImageFormat::Rgba8Uint,
+                                ImageFormat::Rgba8UnormSrgb,
                                 image.width(),
                                 image.height(),
                             );
 
                             i.draw(&mut canvas, param);
+
+                            canvas.finish(ctx)?;
                         }
                     }
                     None => {}
@@ -85,8 +87,10 @@ impl Transition for Sphere {
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         self.dim.aspect_ratio = image.width() as f32 / image.height() as f32;
         let shader = graphics::ShaderBuilder::new()
-            .fragment_path("/sphere_150.glslf")
-            .vertex_path("/basic_150.glslv")
+            //.vertex_path("/basic_150.vert.wgsl")
+            .vertex_path("/simple.vert.wgsl")
+            //.fragment_path("/sphere_150.frag.wgsl")
+            .fragment_path("/simple.frag.wgsl")
             .build(ctx)
             .unwrap();
 

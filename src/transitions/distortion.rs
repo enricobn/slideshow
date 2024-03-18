@@ -1,5 +1,6 @@
+use crate::ggez_utils::Point2;
 use crevice::std140::AsStd140;
-use ggez::graphics::ShaderParams;
+use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat, ShaderParams};
 use ggez::*;
 use image::RgbaImage;
 
@@ -33,7 +34,6 @@ impl Distortion {
 
 impl Transition for Distortion {
     fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
-        /*
         if !self.ended {
             if self.dim.rate <= 0.0 {
                 self.ended = true;
@@ -41,10 +41,7 @@ impl Transition for Distortion {
                 match &self.image {
                     Some(i) => {
                         //println!("Distortion 1 {:?}.", SystemTime::now());
-                        let mut canvas = graphics::Canvas::from_frame(
-                            ctx,
-                            Some(Color::new(0.0, 0.0, 0.0, 1.0)),
-                        );
+                        let mut canvas = graphics::Canvas::from_frame(ctx, None);
                         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
                         if let Some(ref shader) = self.shader {
@@ -55,7 +52,15 @@ impl Transition for Distortion {
 
                                 canvas.set_shader_params(&params);
 
-                                i.draw(&mut canvas, param);
+                                let ii = Image::from_pixels(
+                                    ctx,
+                                    i.as_raw(),
+                                    ImageFormat::Rgba8UnormSrgb,
+                                    i.width(),
+                                    i.height(),
+                                );
+
+                                ii.draw(&mut canvas, param);
                                 //println!("Distortion 6 {:?}.", SystemTime::now());
                                 canvas.finish(ctx)?;
                             }
@@ -67,15 +72,16 @@ impl Transition for Distortion {
             }
         }
 
-         */
         Ok(!self.ended)
     }
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         let dim = Dim { rate: 0.5 };
         let shader = graphics::ShaderBuilder::new()
-            .fragment_path("/distortion_150.wgsl")
-            .vertex_path("/basic_150.wgsl")
+            // .vertex_path("/basic_150.vert.glsl")
+            .vertex_path("/simple.vert.wgsl")
+            // .fragment_path("/distortion_150.frag.glsl")
+            .fragment_path("/simple.frag.wgsl")
             .build(ctx)
             .unwrap();
         self.shader = Some(shader);
