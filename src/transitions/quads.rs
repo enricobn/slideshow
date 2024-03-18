@@ -1,5 +1,5 @@
+use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat, Rect};
 use ggez::*;
-use ggez::graphics::{Drawable, DrawParam, Image, Rect};
 use image::RgbaImage;
 use rand::Rng;
 
@@ -10,12 +10,15 @@ const V_QUADS: u16 = 10;
 
 pub struct Quads {
     quads: Vec<Quad>,
-    image: Option<Image>,
+    image: Option<RgbaImage>,
 }
 
 impl Quads {
     pub fn new() -> Quads {
-        Quads { quads: Vec::new(), image: None }
+        Quads {
+            quads: Vec::new(),
+            image: None,
+        }
     }
 }
 
@@ -37,6 +40,8 @@ impl Transition for Quads {
             return Ok(false);
         }
 
+        let mut canvas = graphics::Canvas::from_frame(ctx, None);
+
         let mut rng = rand::thread_rng();
 
         let index = rng.gen_range(0usize, self.quads.len());
@@ -56,20 +61,29 @@ impl Transition for Quads {
 
                 //println!("{},{} -> {},{},{},{}", quad_x, quad_y, x, y, width, height);
 
-                let draw_param =
-                    DrawParam::default()
-                        .src(Rect::new(x, y, width, height))
-                        .dest(Point2::new(quad_x, quad_y));
+                let draw_param = DrawParam::default()
+                    .src(Rect::new(x, y, width, height))
+                    .dest(Point2::new(quad_x, quad_y));
 
-                image.draw(ctx, draw_param)?;
+                let i = Image::from_pixels(
+                    ctx,
+                    image.as_raw(),
+                    ImageFormat::Rgba8UnormSrgb,
+                    image.width(),
+                    image.height(),
+                );
+
+                i.draw(&mut canvas, draw_param);
             }
             None => {}
         }
 
+        canvas.finish(ctx)?;
+
         Ok(true)
     }
 
-    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
         self.quads.clear();
 
         let quad_size = image.height() as f32 / V_QUADS as f32;
@@ -85,8 +99,6 @@ impl Transition for Quads {
             }
         }
 
-        let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
-
-        self.image = Some(i);
+        self.image = Some(image);
     }
 }

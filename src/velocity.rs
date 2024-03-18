@@ -4,7 +4,7 @@ pub trait Velocity {
 }
 
 pub struct StepsVelocity {
-    steps: Vec<f32>
+    steps: Vec<f32>,
 }
 
 impl StepsVelocity {
@@ -19,7 +19,7 @@ impl Velocity for StepsVelocity {
         let step_width = 1.0 / (self.steps.len() - 1) as f32;
         let steps = perc / step_width;
 
-        // perc is between left and right steps 
+        // perc is between left and right steps
         let left_step = steps.floor();
         let right_step = steps.ceil();
         let left_velocity = self.steps[left_step as usize];
@@ -28,7 +28,8 @@ impl Velocity for StepsVelocity {
         let distance_from_right_step = step_width * right_step - perc;
 
         let velocity_difference = left_velocity - right_velocity;
-        let velocity_relative_to_right_step = velocity_difference * distance_from_right_step / step_width;
+        let velocity_relative_to_right_step =
+            velocity_difference * distance_from_right_step / step_width;
 
         let v = velocity_relative_to_right_step + right_velocity;
 

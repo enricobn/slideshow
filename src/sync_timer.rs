@@ -9,7 +9,10 @@ pub struct SyncTimer {
 
 impl SyncTimer {
     pub fn new() -> SyncTimer {
-        SyncTimer { start: Instant::now(), events: Vec::new() }
+        SyncTimer {
+            start: Instant::now(),
+            events: Vec::new(),
+        }
     }
 
     pub fn add(&mut self, event: SyncEvent) {
@@ -21,7 +24,7 @@ impl SyncTimer {
         let mut to_remove = Vec::new();
 
         let now = Instant::now();
-        let mut index : usize = 0;
+        let mut index: usize = 0;
         for event in self.events.iter_mut() {
             let elapsed = now.sub(event.start);
 
@@ -53,6 +56,11 @@ pub struct SyncEvent {
 
 impl SyncEvent {
     pub fn new(id: &'static str, after: Duration, recurring: bool) -> SyncEvent {
-        SyncEvent { id, start: Instant::now(), after, recurring }
+        SyncEvent {
+            id,
+            start: Instant::now(),
+            after,
+            recurring,
+        }
     }
 }

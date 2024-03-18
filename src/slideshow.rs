@@ -1,25 +1,23 @@
 use std::path::Path;
 use std::time::Duration;
 
-use ggez::*;
 use ggez::event::EventHandler;
-use ggez::graphics;
+use ggez::graphics::Rect;
+use ggez::*;
 use image;
-use image::{GenericImage, GenericImageView, ImageBuffer};
 use image::imageops::CatmullRom;
+use image::{GenericImage, GenericImageView, ImageBuffer};
 use rand::Rng;
 
 use crate::sync_timer::*;
-use crate::transitions::distortion::Distortion;
 use crate::transitions::fade::Fade;
 use crate::transitions::pixels::Pixels;
 use crate::transitions::quads::Quads;
 use crate::transitions::slides::Slides;
-use crate::transitions::sphere::Sphere;
 use crate::transitions::transition::{SimpleTransition, Transition};
 
 const LOAD_IMAGE_DELAY: u64 = 5_000; // millis
-const UPDATE_DELAY: u64 = 16; // millis
+const UPDATE_DELAY: u64 = 1000 / 60; // millis
 
 pub struct SlideShow {
     timer: SyncTimer,
@@ -37,7 +35,7 @@ impl SlideShow {
         let folder_name = args.get(1);
 
         if folder_name.is_none() {
-            println!("folder is mandatory", );
+            println!("folder is mandatory",);
             panic!();
         }
 
@@ -50,14 +48,14 @@ impl SlideShow {
                     "slide" => Box::new(Slides::new(1)),
                     "slides" => Box::new(Slides::new(8)),
                     "fade" => Box::new(Fade::new()),
-                    "distortion" => Box::new(Distortion::new()),
-                    "sphere" => Box::new(Sphere::new()),
+                    //"distortion" => Box::new(Distortion::new()),
+                    //"sphere" => Box::new(Sphere::new()),
                     _ => {
                         panic!("Unknown transition {}", s);
                     }
                 }
             }
-            None => Box::new(Fade::new())
+            None => Box::new(Fade::new()),
         };
 
         let directory = Path::new(folder_name.unwrap());
@@ -71,10 +69,11 @@ impl SlideShow {
                 if let Ok(file_type) = entry.file_type() {
                     if file_type.is_file() {
                         let file_name = String::from(entry.path().to_str().unwrap());
-                        if file_name.to_uppercase().ends_with("PNG") ||
-                            file_name.to_uppercase().ends_with("JPG") ||
-                            file_name.to_uppercase().ends_with("JPEG") ||
-                            file_name.to_uppercase().ends_with("BMP") {
+                        if file_name.to_uppercase().ends_with("PNG")
+                            || file_name.to_uppercase().ends_with("JPG")
+                            || file_name.to_uppercase().ends_with("JPEG")
+                            || file_name.to_uppercase().ends_with("BMP")
+                        {
                             file_names.push(file_name);
                         }
                     }
@@ -93,10 +92,24 @@ impl SlideShow {
 
         let mut timer = SyncTimer::new();
         //timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
-        timer.add(SyncEvent::new("draw", Duration::from_millis(UPDATE_DELAY), true));
+        /*timer.add(SyncEvent::new(
+            "draw",
+            Duration::from_millis(UPDATE_DELAY),
+            true,
+        ));
 
-        SlideShow { timer, file_names, file_index: 0, transition, waiting_for_next_image: true, first: true ,
-        fired_events: Vec::new(), image_updated: false}
+         */
+
+        SlideShow {
+            timer,
+            file_names,
+            file_index: 0,
+            transition,
+            waiting_for_next_image: true,
+            first: true,
+            fired_events: Vec::new(),
+            image_updated: false,
+        }
     }
 
     fn update_image(&mut self, ctx: &mut Context) -> GameResult<()> {
@@ -111,7 +124,12 @@ impl SlideShow {
 
         let img = image::open(&file_name).unwrap();
 
-        let rect = graphics::screen_coordinates(ctx);
+        let rect = Rect {
+            x: 0.,
+            y: 0.,
+            w: ctx.gfx.drawable_size().0,
+            h: ctx.gfx.drawable_size().1,
+        };
 
         let width = rect.w;
         let height = rect.h;
@@ -121,27 +139,33 @@ impl SlideShow {
 
         let scale = if scale_x < scale_y { scale_x } else { scale_y };
 
-        let img = img.resize((img.width() as f32 * scale) as u32,
-                             (img.height() as f32 * scale) as u32, CatmullRom);
-
         let black = image::Rgba { 0: [0, 0, 0, 255] };
+
+        let img = img.resize(
+            (img.width() as f32 * scale) as u32,
+            (img.height() as f32 * scale) as u32,
+            CatmullRom,
+        );
 
         let mut img_rgba = ImageBuffer::from_pixel(width as u32, height as u32, black);
 
-        img_rgba.copy_from(&img, ((width - img.width() as f32) / 2.0) as u32, ((height - img.height() as f32) / 2.0) as u32)?;
+        img_rgba
+            .copy_from(
+                &img,
+                ((width - img.width() as f32) / 2.0) as u32,
+                ((height - img.height() as f32) / 2.0) as u32,
+            )
+            .map_err(|it| GameError::CustomError(it.to_string()))?;
 
         self.transition.update_image(ctx, img_rgba);
         self.waiting_for_next_image = false;
 
         Ok(())
     }
-
 }
 
 impl EventHandler<GameError> for SlideShow {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        //println!("update start {:?}.", SystemTime::now());
-
         self.fired_events = self.timer.fired().clone();
 
         if self.first || self.fired_events.iter().any(|it| it == &"next_image") {
@@ -150,51 +174,29 @@ impl EventHandler<GameError> for SlideShow {
             self.first = false;
         }
 
-        //println!("update end {:?}.", SystemTime::now());
+        timer::yield_now();
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
-        //println!("draw start {:?}.", SystemTime::now());
-
         if self.image_updated {
-            //println!("draw: image_updated");
             self.image_updated = false;
-            //graphics::present(ctx);
+            timer::yield_now();
             return Ok(());
         }
 
-        if !self.fired_events.iter().any(|it| it == &"draw") {
-            //graphics::present(ctx);
-            return Ok(());
-        }
-
-        //let start = Instant::now();
         let transaction_finished = !self.transition.draw(ctx)?;
-        //println!("draw: transition done: {}.", transaction_finished);
-
-        //println!("draw 1 {:?}.", SystemTime::now());
 
         if transaction_finished && !self.waiting_for_next_image {
-            //println!("draw: start waiting for next_image");
-            self.timer.add(SyncEvent::new("next_image", Duration::from_millis(LOAD_IMAGE_DELAY), false));
+            self.timer.add(SyncEvent::new(
+                "next_image",
+                Duration::from_millis(LOAD_IMAGE_DELAY),
+                false,
+            ));
             self.waiting_for_next_image = true;
-        } else if !self.waiting_for_next_image {
-            //println!("draw 2 {:?}.", SystemTime::now());
-
-            //println!("draw: main present");
-
-            graphics::present(ctx)?;
-
-            //println!("draw 3 {:?}.", SystemTime::now());
-
-
-            //println!("draw end {:?}.", SystemTime::now());
         }
 
-        //timer::yield_now();
-
+        timer::yield_now();
         Ok(())
     }
-
 }

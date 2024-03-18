@@ -1,16 +1,26 @@
+use ggez::graphics::{Canvas, Color, DrawMode, DrawParam, Drawable, Mesh, Rect};
 use ggez::*;
-use ggez::graphics::{Color, Drawable, DrawMode, DrawParam, Mesh, Rect};
 
 pub type Point2 = nalgebra::Point2<f32>;
 
-pub fn draw_rect(ctx: &mut Context, x: f32, y: f32, width: f32, height: f32, color: &Color, mode: DrawMode) -> GameResult {
+pub fn draw_rect(
+    ctx: &mut Context,
+    canvas: &mut Canvas,
+    x: f32,
+    y: f32,
+    width: f32,
+    height: f32,
+    color: &Color,
+    mode: DrawMode,
+) -> GameResult {
     let rect = Rect::new(0.0, 0.0, width, height);
 
     let mesh = Mesh::new_rectangle(ctx, mode, rect, *color)?;
 
     let param = DrawParam::new().dest(Point2::new(x, y));
 
-    mesh.draw(ctx, param)
+    mesh.draw(canvas, param);
+    Ok(())
 }
 
 /*

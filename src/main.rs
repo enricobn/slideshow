@@ -6,20 +6,21 @@ extern crate rand;
 extern crate separator;
 
 use std::env;
+use std::ops::Deref;
 use std::path;
 
-use ggez::*;
 use ggez::conf::FullscreenType;
-use ggez::graphics::{self};
+use ggez::winit::platform::run_return::EventLoopExtRunReturn;
+use ggez::*;
 
 use crate::slideshow::*;
 
-mod sync_timer;
 mod ggez_utils;
-mod transitions;
 mod slideshow;
-mod velocity;
+mod sync_timer;
+mod transitions;
 mod utils;
+mod velocity;
 
 fn main() -> GameResult<()> {
     let args: Vec<String> = env::args().collect();
@@ -38,25 +39,16 @@ fn build_context_and_run(state: SlideShow) -> Result<(), GameError> {
         path::PathBuf::from("../resources")
     };
 
-    let window_mode = conf::WindowMode::default().fullscreen_type(FullscreenType::True);
-
-    /*let window_mode = conf::WindowMode::default().fullscreen_type(FullscreenType::Windowed)
-        .dimensions(300.0, 300.0);
-     */
+    let window_mode = conf::WindowMode::default()
+        .dimensions(1920.0, 1080.0)
+        .fullscreen_type(FullscreenType::Desktop);
 
     let cb = ContextBuilder::new("slideshow", "enricobn")
-        .window_setup(
-            conf::WindowSetup::default()
-                .title("Slideshow")
-                .vsync(false)
-        )
+        .window_setup(conf::WindowSetup::default().title("Slideshow").vsync(true))
         .window_mode(window_mode)
         .add_resource_path(resource_dir);
 
     let (ctx, events_loop) = cb.build()?;
-
-    println!("Drawable size {:?}", graphics::drawable_size(&ctx));
-    println!("Screen coordinates {:?}", graphics::screen_coordinates(&ctx));
 
     event::run(ctx, events_loop, state)
 }

@@ -1,5 +1,5 @@
+use ggez::graphics::{Color, DrawMode, DrawParam, Drawable, Mesh, MeshBuilder, Rect};
 use ggez::*;
-use ggez::graphics::{Color, Drawable, DrawMode, DrawParam, MeshBuilder, Rect};
 use image::RgbaImage;
 use rand::Rng;
 
@@ -13,7 +13,10 @@ pub struct Pixels {
 
 impl Pixels {
     pub fn new() -> Pixels {
-        Pixels { pixels: Vec::new(), image: None }
+        Pixels {
+            pixels: Vec::new(),
+            image: None,
+        }
     }
 }
 
@@ -33,6 +36,8 @@ impl Transition for Pixels {
         if self.pixels.is_empty() {
             return Ok(false);
         }
+
+        let mut canvas = graphics::Canvas::from_frame(ctx, None);
 
         let mut mesh_builder = MeshBuilder::new();
 
@@ -56,11 +61,13 @@ impl Transition for Pixels {
             None => {}
         }
 
-        let mesh = mesh_builder.build(ctx)?;
+        let mesh = Mesh::from_data(ctx, mesh_builder.build());
 
         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
-        mesh.draw(ctx, param)?;
+        mesh.draw(&mut canvas, param);
+
+        canvas.finish(ctx)?;
 
         Ok(true)
     }
@@ -83,6 +90,10 @@ impl Transition for Pixels {
 }
 
 fn pixel_to_color(pixel: &image::Rgba<u8>) -> Color {
-    Color::new(pixel.0[0] as f32 / 255.0, pixel.0[1] as f32 / 255.0, pixel.0[2] as f32 / 255.0,
-               pixel.0[3] as f32 / 255.0)
+    Color::new(
+        pixel.0[0] as f32 / 255.0,
+        pixel.0[1] as f32 / 255.0,
+        pixel.0[2] as f32 / 255.0,
+        pixel.0[3] as f32 / 255.0,
+    )
 }

@@ -1,6 +1,3 @@
-DOING
-------
-
 NEXT
 -----
 - the velocity should be independent of the refresh rate
@@ -10,9 +7,6 @@ NEXT
 
 BUGS
 -----
-- I have to force x11-dl = "=2.18.3" in cargo.toml otherwise I get an  "Illegal instruction" error
-  - to enable core dump I have done on bash:
-    - ulimit -c unlimited
 - quads does not work fine when quads do not fill the entire window (or screen)
 - some initial frames are lost, it can be visible in quads screensaver
-- when I move the mouse then something werid happend, it can be visible in quads screensaver
+- when I move the mouse then something weird happens, it can be visible in quads screensaver

@@ -1,5 +1,5 @@
+use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat, Rect};
 use ggez::*;
-use ggez::graphics::{Drawable, DrawParam, Image, Rect};
 use image::RgbaImage;
 
 use crate::ggez_utils::Point2;
@@ -16,7 +16,11 @@ pub struct Slides {
 
 impl Slides {
     pub fn new(slides: u32) -> Slides {
-        Slides { n_slides: slides, slides: Vec::new(), image: None }
+        Slides {
+            n_slides: slides,
+            slides: Vec::new(),
+            image: None,
+        }
     }
 }
 
@@ -98,14 +102,18 @@ impl Slide {
     }
 
     fn to_rect(&self) -> Rect {
-        Rect::new(self.x / self.i_width as f32, self.y / self.i_height as f32, self.width / self.i_width as f32,
-                  self.height / self.i_height as f32)
+        Rect::new(
+            self.x / self.i_width as f32,
+            self.y / self.i_height as f32,
+            self.width / self.i_width as f32,
+            self.height / self.i_height as f32,
+        )
     }
 
     fn to_point(&self) -> Point2 {
         match self.direction {
             Direction::Left => Point2::new(0.0, self.y),
-            _ => Point2::new(self.i_width as f32 - self.width, self.y)
+            _ => Point2::new(self.i_width as f32 - self.width, self.y),
         }
     }
 }
@@ -120,16 +128,16 @@ impl Transition for Slides {
 
         match &self.image {
             Some(i) => {
+                let mut canvas = graphics::Canvas::from_frame(ctx, None);
                 for slide in self.slides.iter_mut() {
                     if !slide.ended {
                         slide.update();
 
-                        let draw_param =
-                            DrawParam::default()
-                                .src(slide.to_rect())
-                                .dest(slide.to_point());
+                        let draw_param = DrawParam::default()
+                            .src(slide.to_rect())
+                            .dest(slide.to_point());
 
-                        i.draw(ctx, draw_param)?;
+                        i.draw(&mut canvas, draw_param);
                         ended = false;
 
                         //if slide.ended {
@@ -138,6 +146,7 @@ impl Transition for Slides {
                         //}
                     }
                 }
+                canvas.finish(ctx)?;
             }
             None => {}
         }
@@ -163,7 +172,13 @@ impl Transition for Slides {
             self.slides.push(slide);
         }
 
-        let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
+        let i = Image::from_pixels(
+            ctx,
+            image.as_raw(),
+            ImageFormat::Rgba8UnormSrgb,
+            image.width(),
+            image.height(),
+        );
 
         self.image = Some(i);
     }

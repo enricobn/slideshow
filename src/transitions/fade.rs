@@ -1,5 +1,5 @@
+use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat};
 use ggez::*;
-use ggez::graphics::{Drawable, DrawParam, Image};
 use image::RgbaImage;
 
 use crate::ggez_utils::Point2;
@@ -16,7 +16,12 @@ pub struct Fade {
 
 impl Fade {
     pub fn new() -> Fade {
-        Fade { image: None, last_image: None, ended: true, alpha: 0.0 }
+        Fade {
+            image: None,
+            last_image: None,
+            ended: true,
+            alpha: 0.0,
+        }
     }
 }
 
@@ -33,6 +38,7 @@ impl Transition for Fade {
         if !self.ended {
             match &self.image {
                 Some(image) => {
+                    let mut canvas = graphics::Canvas::from_frame(ctx, None);
                     //graphics::clear(ctx);
                     let mut ii = image.clone();
 
@@ -47,12 +53,19 @@ impl Transition for Fade {
                                     color[2] = self.blend(last_color[2], color[2]);
                                 }
                             }
-                            let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &ii.into_raw()).unwrap();
+
+                            let i = Image::from_pixels(
+                                ctx,
+                                ii.as_raw(),
+                                ImageFormat::Rgba8UnormSrgb,
+                                image.width(),
+                                image.height(),
+                            );
 
                             let draw_param = DrawParam::default();
                             draw_param.dest(Point2::new(0.0, 0.0));
 
-                            i.draw(ctx, draw_param)?;
+                            i.draw(&mut canvas, draw_param);
                         }
                         None => {
                             for x in 0..ii.width() {
@@ -63,13 +76,20 @@ impl Transition for Fade {
                                     color[2] = self.blend(0, color[2]);
                                 }
                             }
-                            let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &ii.into_raw()).unwrap();
+                            let i = Image::from_pixels(
+                                ctx,
+                                ii.as_raw(),
+                                ImageFormat::Rgba8UnormSrgb,
+                                image.width(),
+                                image.height(),
+                            );
                             let draw_param = DrawParam::default();
                             draw_param.dest(Point2::new(0.0, 0.0));
 
-                            i.draw(ctx, draw_param)?;
+                            i.draw(&mut canvas, draw_param);
                         }
                     }
+                    canvas.finish(ctx)?;
                 }
                 None => {}
             }

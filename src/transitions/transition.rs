@@ -1,5 +1,5 @@
+use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat};
 use ggez::*;
-use ggez::graphics::{Color, Drawable, DrawParam, Image};
 use image::RgbaImage;
 
 use crate::ggez_utils::Point2;
@@ -18,7 +18,10 @@ pub struct SimpleTransition {
 
 impl SimpleTransition {
     pub fn new() -> SimpleTransition {
-        SimpleTransition { image: None, ended: true }
+        SimpleTransition {
+            image: None,
+            ended: true,
+        }
     }
 }
 
@@ -28,9 +31,10 @@ impl Transition for SimpleTransition {
             self.ended = true;
             match self.image {
                 Some(ref i) => {
-                    graphics::clear(ctx, Color::BLACK);
+                    let mut canvas = graphics::Canvas::from_frame(ctx, None);
                     let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
-                    i.draw(ctx, param)?;
+                    i.draw(&mut canvas, param);
+                    canvas.finish(ctx)?;
                 }
                 None => {}
             }
@@ -39,7 +43,13 @@ impl Transition for SimpleTransition {
     }
 
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
-        let i = Image::from_rgba8(ctx, image.width() as u16, image.height() as u16, &image.into_raw()).unwrap();
+        let i = Image::from_pixels(
+            ctx,
+            image.as_raw(),
+            ImageFormat::Rgba8UnormSrgb,
+            image.width(),
+            image.height(),
+        );
         self.image = Some(i);
         self.ended = false;
     }
