@@ -10,6 +10,7 @@ edition = "2021"
 cargo-resource-root = []
 
 [dependencies]
+bzip2 = "0.4.4" # for security alert from ggez/zip
 crevice = "0.13.0"
 ggez = "0.9.3"
 gfx = "0.18"
