@@ -41,7 +41,7 @@ fn build_context_and_run(state: SlideShow) -> Result<(), GameError> {
 
     let window_mode = conf::WindowMode::default()
         .dimensions(1920.0, 1080.0)
-        .fullscreen_type(FullscreenType::Desktop);
+        .fullscreen_type(FullscreenType::True);
 
     let cb = ContextBuilder::new("slideshow", "enricobn")
         .window_setup(conf::WindowSetup::default().title("Slideshow").vsync(true))
