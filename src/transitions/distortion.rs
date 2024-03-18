@@ -17,7 +17,6 @@ pub struct Distortion {
     ended: bool,
     shader: Option<graphics::Shader>,
     dim: Dim,
-    params: Option<ShaderParams<Dim>>,
 }
 
 impl Distortion {
@@ -27,7 +26,6 @@ impl Distortion {
             ended: true,
             shader: None,
             dim: Dim { rate: 1.0 },
-            params: None,
         }
     }
 }
@@ -45,25 +43,25 @@ impl Transition for Distortion {
                         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
                         if let Some(ref shader) = self.shader {
-                            if let Some(ref params) = self.params {
-                                //println!("Distortion 3 {:?}.", SystemTime::now());
+                            //println!("Distortion 3 {:?}.", SystemTime::now());
 
-                                let _lock = canvas.set_shader(shader);
+                            let _lock = canvas.set_shader(shader);
 
-                                canvas.set_shader_params(&params);
+                            let shader_params =
+                                graphics::ShaderParamsBuilder::new(&self.dim).build(ctx);
+                            canvas.set_shader_params(&shader_params);
 
-                                let ii = Image::from_pixels(
-                                    ctx,
-                                    i.as_raw(),
-                                    ImageFormat::Rgba8UnormSrgb,
-                                    i.width(),
-                                    i.height(),
-                                );
+                            let ii = Image::from_pixels(
+                                ctx,
+                                i.as_raw(),
+                                ImageFormat::Rgba8UnormSrgb,
+                                i.width(),
+                                i.height(),
+                            );
 
-                                ii.draw(&mut canvas, param);
-                                //println!("Distortion 6 {:?}.", SystemTime::now());
-                                canvas.finish(ctx)?;
-                            }
+                            ii.draw(&mut canvas, param);
+                            //println!("Distortion 6 {:?}.", SystemTime::now());
+                            canvas.finish(ctx)?;
                         }
                     }
                     None => {}
@@ -78,15 +76,13 @@ impl Transition for Distortion {
     fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
         let dim = Dim { rate: 0.5 };
         let shader = graphics::ShaderBuilder::new()
-            // .vertex_path("/basic_150.vert.glsl")
             .vertex_path("/simple.vert.wgsl")
-            // .fragment_path("/distortion_150.frag.glsl")
-            .fragment_path("/simple.frag.wgsl")
+            .fragment_path("/distortion.frag.wgsl")
+            //.fragment_path("/simple.frag.wgsl")
             .build(ctx)
             .unwrap();
         self.shader = Some(shader);
         self.dim = dim;
-        self.params = Some(graphics::ShaderParamsBuilder::new(&self.dim).build(ctx));
         self.image = Some(image);
         self.ended = false;
         self.dim.rate = 1.0;

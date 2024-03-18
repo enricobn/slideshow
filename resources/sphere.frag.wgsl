@@ -45,6 +45,5 @@ fn fs_main(in: VertexOutput) -> @location(0) vec4<f32> {
     let distanceFromCenter2 = distanceFromCenter1 / real_radius;
     let normalizedDepth0 = sqrt(1.0 - distanceFromCenter2 * distanceFromCenter2);
 
-    //return textureSample(t, s, (refractedVector.xy + 1.0) * 0.5) * checkForPresenceWithinSphere * normalizedDepth0;
-    return in.position;
+    return textureSample(t, s, (refractedVector.xy + 1.0) * 0.5) * checkForPresenceWithinSphere * normalizedDepth0;
 }

@@ -89,8 +89,8 @@ impl Transition for Sphere {
         let shader = graphics::ShaderBuilder::new()
             //.vertex_path("/basic_150.vert.wgsl")
             .vertex_path("/simple.vert.wgsl")
-            //.fragment_path("/sphere_150.frag.wgsl")
-            .fragment_path("/simple.frag.wgsl")
+            .fragment_path("/sphere.frag.wgsl")
+            //.fragment_path("/simple.frag.wgsl")
             .build(ctx)
             .unwrap();
 

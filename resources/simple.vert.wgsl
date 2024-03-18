@@ -25,7 +25,7 @@ fn vs_main(
         * vec4(position, 0.0, 1.0);
 
     out.position = instance_transform;
-    out.uv = uv;
+    out.uv = uv * uniforms.src_rect.zw + uniforms.src_rect.xy;
     out.color = color;
     return out;
 }
