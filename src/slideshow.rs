@@ -1,8 +1,12 @@
+use std::fmt::Display;
+use std::ops::Sub;
 use std::path::Path;
-use std::time::Duration;
+use std::thread;
+use std::time::{Duration, SystemTime};
 
+use chrono::{DateTime, Utc};
 use ggez::event::EventHandler;
-use ggez::graphics::Rect;
+use ggez::graphics::{Image, ImageFormat, Rect, ScreenImage};
 use ggez::*;
 use image;
 use image::imageops::CatmullRom;
@@ -28,12 +32,13 @@ pub struct SlideShow {
     transition: Box<dyn Transition>,
     waiting_for_next_image: bool,
     first: bool,
-    fired_events: Vec<&'static str>,
     image_updated: bool,
+    last_time: SystemTime,
+    screen_image_buffer: ScreenImage,
 }
 
 impl SlideShow {
-    pub fn new(args: Vec<String>) -> SlideShow {
+    pub fn new(args: Vec<String>, screen_image_buffer: ScreenImage) -> SlideShow {
         let folder_name = args.get(1);
 
         if folder_name.is_none() {
@@ -90,7 +95,7 @@ impl SlideShow {
 
         rng.shuffle(&mut file_names);
 
-        let mut timer = SyncTimer::new();
+        let timer = SyncTimer::new();
         //timer.add(SyncEvent::new("next_image", Duration::from_millis(0), false));
         /*timer.add(SyncEvent::new(
             "draw",
@@ -107,8 +112,9 @@ impl SlideShow {
             transition,
             waiting_for_next_image: true,
             first: true,
-            fired_events: Vec::new(),
             image_updated: false,
+            last_time: SystemTime::now(),
+            screen_image_buffer,
         }
     }
 
@@ -157,35 +163,75 @@ impl SlideShow {
             )
             .map_err(|it| GameError::CustomError(it.to_string()))?;
 
-        self.transition.update_image(ctx, img_rgba);
+        let image = Image::from_pixels(
+            ctx,
+            img_rgba.as_raw(),
+            ImageFormat::Rgba8UnormSrgb,
+            img_rgba.width(),
+            img_rgba.height(),
+        );
+
+        self.transition.update_image(ctx, image);
         self.waiting_for_next_image = false;
 
         Ok(())
+    }
+
+    fn wait(&mut self, ctx: &mut Context) {
+        let frame_time = Duration::from_millis(1_000 / 30);
+        let duration = self.last_time.elapsed().unwrap();
+        if duration.lt(&frame_time) {
+            let duration = frame_time.sub(duration);
+            // let start_sleep = SystemTime::now();
+            thread::sleep(duration);
+            // println!("thread sleep end after {:?}", start_sleep.elapsed());
+        }
+        self.last_time = SystemTime::now();
+    }
+
+    fn get_time_format(&self) -> impl Display {
+        let system_time = SystemTime::now();
+        let datetime: DateTime<Utc> = system_time.into();
+        //datetime.format("%Y-%m-%d %H:%M:%S%.3f")
+        datetime.format("%H:%M:%S%.3f")
     }
 }
 
 impl EventHandler<GameError> for SlideShow {
     fn update(&mut self, ctx: &mut Context) -> GameResult<()> {
-        self.fired_events = self.timer.fired().clone();
-
-        if self.first || self.fired_events.iter().any(|it| it == &"next_image") {
+        if self.first || self.timer.fired().iter().any(|it| it == &"next_image") {
             self.update_image(ctx)?;
             self.image_updated = true;
             self.first = false;
         }
 
-        timer::yield_now();
+        if self.waiting_for_next_image {
+            self.wait(ctx);
+            return Ok(());
+        }
         Ok(())
     }
 
     fn draw(&mut self, ctx: &mut Context) -> GameResult<()> {
         if self.image_updated {
+            ctx.gfx.present(&self.screen_image_buffer.image(ctx))?;
             self.image_updated = false;
-            timer::yield_now();
+            self.wait(ctx);
             return Ok(());
         }
 
-        let transaction_finished = !self.transition.draw(ctx)?;
+        if self.waiting_for_next_image {
+            ctx.gfx.present(&self.screen_image_buffer.image(ctx))?;
+            self.wait(ctx);
+            return Ok(());
+        }
+
+        let mut canvas =
+            graphics::Canvas::from_screen_image(ctx, &mut self.screen_image_buffer, None);
+
+        let transaction_finished = !self.transition.draw(ctx, &mut canvas)?;
+        canvas.finish(ctx)?;
+        ctx.gfx.present(&self.screen_image_buffer.image(ctx))?;
 
         if transaction_finished && !self.waiting_for_next_image {
             self.timer.add(SyncEvent::new(
@@ -195,8 +241,6 @@ impl EventHandler<GameError> for SlideShow {
             ));
             self.waiting_for_next_image = true;
         }
-
-        timer::yield_now();
         Ok(())
     }
 }

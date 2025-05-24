@@ -1,6 +1,5 @@
-use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat, Rect};
+use ggez::graphics::{Canvas, DrawParam, Drawable, Image, Rect};
 use ggez::*;
-use image::RgbaImage;
 use rand::Rng;
 
 use crate::ggez_utils::Point2;
@@ -10,7 +9,7 @@ const V_QUADS: u16 = 10;
 
 pub struct Quads {
     quads: Vec<Quad>,
-    image: Option<RgbaImage>,
+    image: Option<Image>,
 }
 
 impl Quads {
@@ -35,12 +34,10 @@ impl Quad {
 }
 
 impl Transition for Quads {
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool> {
         if self.quads.is_empty() {
             return Ok(false);
         }
-
-        let mut canvas = graphics::Canvas::from_frame(ctx, None);
 
         let mut rng = rand::thread_rng();
 
@@ -59,31 +56,26 @@ impl Transition for Quads {
                 let width = quad_size / image.width() as f32;
                 let height = quad_size / image.height() as f32;
 
-                //println!("{},{} -> {},{},{},{}", quad_x, quad_y, x, y, width, height);
+                let src = Rect::new(x, y, width, height);
+                let dest = Point2::new(quad_x, quad_y);
 
-                let draw_param = DrawParam::default()
-                    .src(Rect::new(x, y, width, height))
-                    .dest(Point2::new(quad_x, quad_y));
+                // println!("quad {src:?} -> {dest}");
 
-                let i = Image::from_pixels(
-                    ctx,
-                    image.as_raw(),
-                    ImageFormat::Rgba8UnormSrgb,
-                    image.width(),
-                    image.height(),
-                );
+                let draw_param = DrawParam::default().src(src).dest(dest);
 
-                i.draw(&mut canvas, draw_param);
+                image.draw(canvas, draw_param);
             }
             None => {}
         }
 
-        canvas.finish(ctx)?;
+        //        canvas.finish(ctx)?;
 
         Ok(true)
     }
 
-    fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: Image) {
+        // println!("update_image {},{}", image.width(), image.height());
+
         self.quads.clear();
 
         let quad_size = image.height() as f32 / V_QUADS as f32;

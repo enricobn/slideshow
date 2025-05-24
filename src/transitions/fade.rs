@@ -1,6 +1,7 @@
-use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat};
+use ggez::graphics::{Canvas, DrawParam, Drawable, Image, ImageFormat};
 use ggez::*;
 use image::RgbaImage;
+use std::time::SystemTime;
 
 use crate::ggez_utils::Point2;
 use crate::transitions::transition::*;
@@ -12,6 +13,7 @@ pub struct Fade {
     last_image: Option<RgbaImage>,
     ended: bool,
     alpha: f32,
+    time: SystemTime,
 }
 
 impl Fade {
@@ -21,6 +23,7 @@ impl Fade {
             last_image: None,
             ended: true,
             alpha: 0.0,
+            time: SystemTime::now(),
         }
     }
 }
@@ -34,12 +37,10 @@ impl Fade {
 }
 
 impl Transition for Fade {
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool> {
         if !self.ended {
             match &self.image {
                 Some(image) => {
-                    let mut canvas = graphics::Canvas::from_frame(ctx, None);
-                    //graphics::clear(ctx);
                     let mut ii = image.clone();
 
                     match &self.last_image {
@@ -65,7 +66,7 @@ impl Transition for Fade {
                             let draw_param = DrawParam::default();
                             draw_param.dest(Point2::new(0.0, 0.0));
 
-                            i.draw(&mut canvas, draw_param);
+                            i.draw(canvas, draw_param);
                         }
                         None => {
                             for x in 0..ii.width() {
@@ -86,10 +87,9 @@ impl Transition for Fade {
                             let draw_param = DrawParam::default();
                             draw_param.dest(Point2::new(0.0, 0.0));
 
-                            i.draw(&mut canvas, draw_param);
+                            i.draw(canvas, draw_param);
                         }
                     }
-                    canvas.finish(ctx)?;
                 }
                 None => {}
             }
@@ -103,9 +103,13 @@ impl Transition for Fade {
         Ok(!self.ended)
     }
 
-    fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: Image) {
         self.last_image = self.image.clone();
-        self.image = Some(image);
+
+        let pixels = image.to_pixels(ctx).unwrap();
+        let i = RgbaImage::from_raw(image.width(), image.height(), pixels).unwrap();
+        self.image = Some(i);
+
         self.ended = false;
     }
 }

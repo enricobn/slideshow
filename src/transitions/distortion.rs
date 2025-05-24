@@ -1,8 +1,7 @@
 use crate::ggez_utils::Point2;
 use crevice::std140::AsStd140;
-use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat, ShaderParams};
+use ggez::graphics::{Canvas, DrawParam, Drawable, Image};
 use ggez::*;
-use image::RgbaImage;
 
 use crate::transitions::transition::Transition;
 
@@ -13,7 +12,7 @@ pub struct Dim {
 }
 
 pub struct Distortion {
-    image: Option<RgbaImage>,
+    image: Option<Image>,
     ended: bool,
     shader: Option<graphics::Shader>,
     dim: Dim,
@@ -31,15 +30,14 @@ impl Distortion {
 }
 
 impl Transition for Distortion {
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool> {
         if !self.ended {
             if self.dim.rate <= 0.0 {
                 self.ended = true;
             } else {
                 match &self.image {
-                    Some(i) => {
+                    Some(image) => {
                         //println!("Distortion 1 {:?}.", SystemTime::now());
-                        let mut canvas = graphics::Canvas::from_frame(ctx, None);
                         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
                         if let Some(ref shader) = self.shader {
@@ -51,17 +49,8 @@ impl Transition for Distortion {
                                 graphics::ShaderParamsBuilder::new(&self.dim).build(ctx);
                             canvas.set_shader_params(&shader_params);
 
-                            let ii = Image::from_pixels(
-                                ctx,
-                                i.as_raw(),
-                                ImageFormat::Rgba8UnormSrgb,
-                                i.width(),
-                                i.height(),
-                            );
-
-                            ii.draw(&mut canvas, param);
+                            image.draw(canvas, param);
                             //println!("Distortion 6 {:?}.", SystemTime::now());
-                            canvas.finish(ctx)?;
                         }
                     }
                     None => {}
@@ -73,7 +62,7 @@ impl Transition for Distortion {
         Ok(!self.ended)
     }
 
-    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: Image) {
         let dim = Dim { rate: 0.5 };
         let shader = graphics::ShaderBuilder::new()
             .vertex_path("/simple.vert.wgsl")

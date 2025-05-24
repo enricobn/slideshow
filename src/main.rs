@@ -6,11 +6,9 @@ extern crate rand;
 extern crate separator;
 
 use std::env;
-use std::ops::Deref;
 use std::path;
 
 use ggez::conf::FullscreenType;
-use ggez::winit::platform::run_return::EventLoopExtRunReturn;
 use ggez::*;
 
 use crate::slideshow::*;
@@ -25,12 +23,10 @@ mod velocity;
 fn main() -> GameResult<()> {
     let args: Vec<String> = env::args().collect();
 
-    let state = SlideShow::new(args);
-
-    build_context_and_run(state)
+    build_context_and_run(args)
 }
 
-fn build_context_and_run(state: SlideShow) -> Result<(), GameError> {
+fn build_context_and_run(args: Vec<String>) -> Result<(), GameError> {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
         let mut path = path::PathBuf::from(manifest_dir);
         path.push("resources");
@@ -41,14 +37,19 @@ fn build_context_and_run(state: SlideShow) -> Result<(), GameError> {
 
     let window_mode = conf::WindowMode::default()
         .dimensions(1920.0, 1080.0)
-        .fullscreen_type(FullscreenType::True);
+        .fullscreen_type(FullscreenType::Windowed);
 
     let cb = ContextBuilder::new("slideshow", "enricobn")
         .window_setup(conf::WindowSetup::default().title("Slideshow").vsync(true))
         .window_mode(window_mode)
         .add_resource_path(resource_dir);
 
-    let (ctx, events_loop) = cb.build()?;
+    let (mut ctx, events_loop) = cb.build()?;
+
+    let screen =
+        graphics::ScreenImage::new(&mut ctx, graphics::ImageFormat::Rgba8UnormSrgb, 1., 1., 1);
+
+    let state = SlideShow::new(args, screen);
 
     event::run(ctx, events_loop, state)
 }

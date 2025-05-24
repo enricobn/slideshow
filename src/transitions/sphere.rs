@@ -1,7 +1,6 @@
 use crevice::std140::AsStd140;
-use ggez::graphics::{Color, DrawParam, Drawable, Image, ImageFormat};
+use ggez::graphics::{Canvas, DrawParam, Drawable, Image};
 use ggez::*;
-use image::RgbaImage;
 
 use crate::ggez_utils::Point2;
 use crate::transitions::transition::Transition;
@@ -18,7 +17,7 @@ struct Dim {
 }
 
 pub struct Sphere {
-    image: Option<RgbaImage>,
+    image: Option<Image>,
     ended: bool,
     shader: Option<graphics::Shader>,
     dim: Dim,
@@ -44,7 +43,7 @@ impl Sphere {
 }
 
 impl Transition for Sphere {
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool> {
         if !self.ended {
             if self.dim.rate <= 0.0 {
                 self.ended = true;
@@ -53,8 +52,6 @@ impl Transition for Sphere {
                 self.dim.radius = self.dim.refractive_index / 2.0;
                 match &self.image {
                     Some(image) => {
-                        let mut canvas =
-                            graphics::Canvas::from_frame(ctx, Some(Color::new(0.0, 0.0, 0.0, 1.0)));
                         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
                         if let Some(ref shader) = self.shader {
@@ -63,17 +60,7 @@ impl Transition for Sphere {
                                 graphics::ShaderParamsBuilder::new(&self.dim).build(ctx);
                             canvas.set_shader_params(&shader_params);
 
-                            let i = Image::from_pixels(
-                                ctx,
-                                image.as_raw(),
-                                ImageFormat::Rgba8UnormSrgb,
-                                image.width(),
-                                image.height(),
-                            );
-
-                            i.draw(&mut canvas, param);
-
-                            canvas.finish(ctx)?;
+                            image.draw(canvas, param);
                         }
                     }
                     None => {}
@@ -84,7 +71,7 @@ impl Transition for Sphere {
         Ok(!self.ended)
     }
 
-    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: Image) {
         self.dim.aspect_ratio = image.width() as f32 / image.height() as f32;
         let shader = graphics::ShaderBuilder::new()
             //.vertex_path("/basic_150.vert.wgsl")

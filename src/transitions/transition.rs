@@ -1,14 +1,13 @@
-use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat};
+use ggez::graphics::{Canvas, DrawParam, Drawable, Image};
 use ggez::*;
-use image::RgbaImage;
 
 use crate::ggez_utils::Point2;
 
 pub trait Transition {
     /// Should return true if the transition is still running.
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool>;
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool>;
 
-    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage);
+    fn update_image(&mut self, ctx: &mut Context, image: Image);
 }
 
 pub struct SimpleTransition {
@@ -26,7 +25,7 @@ impl SimpleTransition {
 }
 
 impl Transition for SimpleTransition {
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool> {
         if !self.ended {
             self.ended = true;
             match self.image {
@@ -42,15 +41,8 @@ impl Transition for SimpleTransition {
         Ok(false)
     }
 
-    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
-        let i = Image::from_pixels(
-            ctx,
-            image.as_raw(),
-            ImageFormat::Rgba8UnormSrgb,
-            image.width(),
-            image.height(),
-        );
-        self.image = Some(i);
+    fn update_image(&mut self, _ctx: &mut Context, image: Image) {
+        self.image = Some(image);
         self.ended = false;
     }
 }

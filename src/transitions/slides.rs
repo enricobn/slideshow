@@ -1,6 +1,5 @@
-use ggez::graphics::{DrawParam, Drawable, Image, ImageFormat, Rect};
+use ggez::graphics::{Canvas, DrawParam, Drawable, Image, Rect};
 use ggez::*;
-use image::RgbaImage;
 
 use crate::ggez_utils::Point2;
 use crate::transitions::transition::*;
@@ -119,7 +118,7 @@ impl Slide {
 }
 
 impl Transition for Slides {
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool> {
         if self.slides.is_empty() {
             return Ok(false);
         }
@@ -128,25 +127,21 @@ impl Transition for Slides {
 
         match &self.image {
             Some(i) => {
-                let mut canvas = graphics::Canvas::from_frame(ctx, None);
                 for slide in self.slides.iter_mut() {
                     if !slide.ended {
                         slide.update();
 
-                        let draw_param = DrawParam::default()
-                            .src(slide.to_rect())
-                            .dest(slide.to_point());
+                        let src = slide.to_rect();
+                        let dest = slide.to_point();
 
-                        i.draw(&mut canvas, draw_param);
+                        // println!("slide {src:?} -> {dest}");
+
+                        let draw_param = DrawParam::default().src(src).dest(dest);
+
+                        i.draw(canvas, draw_param);
                         ended = false;
-
-                        //if slide.ended {
-                        //    println!("{:?}", draw_param.src);
-                        //    println!("{}", draw_param.dest);
-                        //}
                     }
                 }
-                canvas.finish(ctx)?;
             }
             None => {}
         }
@@ -154,8 +149,9 @@ impl Transition for Slides {
         Ok(!ended)
     }
 
-    fn update_image(&mut self, ctx: &mut Context, image: RgbaImage) {
-        //println!("slides update_image");
+    fn update_image(&mut self, ctx: &mut Context, image: Image) {
+        // println!("update_image {},{}", image.width(), image.height());
+
         self.slides.clear();
 
         let slide_height = image.height() as f32 / self.n_slides as f32;
@@ -172,15 +168,7 @@ impl Transition for Slides {
             self.slides.push(slide);
         }
 
-        let i = Image::from_pixels(
-            ctx,
-            image.as_raw(),
-            ImageFormat::Rgba8UnormSrgb,
-            image.width(),
-            image.height(),
-        );
-
-        self.image = Some(i);
+        self.image = Some(image);
     }
 }
 

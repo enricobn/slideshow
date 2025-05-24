@@ -1,4 +1,6 @@
-use ggez::graphics::{Color, DrawMode, DrawParam, Drawable, Mesh, MeshBuilder, Rect};
+use ggez::graphics::{
+    Canvas, Color, DrawMode, DrawParam, Drawable, Image, Mesh, MeshBuilder, Rect,
+};
 use ggez::*;
 use image::RgbaImage;
 use rand::Rng;
@@ -32,12 +34,10 @@ impl Pixel {
 }
 
 impl Transition for Pixels {
-    fn draw(&mut self, ctx: &mut Context) -> GameResult<bool> {
+    fn draw(&mut self, ctx: &mut Context, canvas: &mut Canvas) -> GameResult<bool> {
         if self.pixels.is_empty() {
             return Ok(false);
         }
-
-        let mut canvas = graphics::Canvas::from_frame(ctx, None);
 
         let mut mesh_builder = MeshBuilder::new();
 
@@ -65,14 +65,12 @@ impl Transition for Pixels {
 
         let param = DrawParam::new().dest(Point2::new(0.0, 0.0));
 
-        mesh.draw(&mut canvas, param);
-
-        canvas.finish(ctx)?;
+        mesh.draw(canvas, param);
 
         Ok(true)
     }
 
-    fn update_image(&mut self, _ctx: &mut Context, image: RgbaImage) {
+    fn update_image(&mut self, ctx: &mut Context, image: Image) {
         self.pixels.clear();
 
         for x in 0..image.width() {
@@ -85,7 +83,9 @@ impl Transition for Pixels {
 
         rng.shuffle(&mut self.pixels);
 
-        self.image = Some(image);
+        let pixels = image.to_pixels(ctx).unwrap();
+        let i = RgbaImage::from_raw(image.width(), image.height(), pixels).unwrap();
+        self.image = Some(i);
     }
 }
 
